@@ -638,14 +638,57 @@
 
     /* ── Responsive ── */
     @media (max-width: 768px) {
+      .container { padding: 16px 12px; }
+
+      /* 히어로 */
+      .today-hero { padding: 20px 16px; border-radius: 16px; }
+      .hero-big-temp { font-size: 52px; }
+      .hero-temp-info .weather-label { font-size: 16px; }
+      .hero-temp-info .minmax { font-size: 14px; }
+      .hero-cards { grid-template-columns: 1fr; gap: 8px; }
+      .hero-cards .card-value { font-size: 14px; }
+      .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .hero-stat .hs-value { font-size: 18px; }
+      .glass { padding: 12px 14px; border-radius: 12px; }
+
+      /* 시간대 그래프 */
+      .hourly-graph-wrap { padding: 16px 4px 12px; border-radius: 12px; }
+      .hg-col { width: 60px; }
+      .hg-icon { font-size: 24px; margin-bottom: 8px; }
+      .hg-temp { font-size: 13px; }
+      .hg-hour { font-size: 12px; }
+
+      /* 기온별 옷차림 */
       .temp-table { display: block; overflow-x: auto; }
-      header h1 { font-size: 22px; }
-      .fab-group { bottom: 20px; right: 20px; }
-      .fab { width: 44px; height: 44px; font-size: 18px; }
-      .today-hero { padding: 24px; }
-      .hero-big-temp { font-size: 56px; }
-      .hero-cards { grid-template-columns: 1fr; }
+      .temp-table thead th { font-size: 12px; padding: 10px 8px; }
+      .temp-table tbody td { padding: 10px 8px; font-size: 13px; }
+      .temp-bar-label { font-size: 15px; }
+      .clothes .tag { font-size: 11px; padding: 2px 8px; }
+
+      /* 섹션 타이틀 */
+      .section-title { font-size: 17px; }
+
+      /* 기록 폼 */
+      .record-form { padding: 16px; border-radius: 12px; }
+      .record-form h3 { font-size: 15px; }
+      .form-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .form-group input,
+      .form-group select,
+      .form-group textarea { font-size: 14px; padding: 10px; }
+
+      /* 플로팅 버튼 */
+      .fab-group { bottom: 16px; right: 16px; gap: 10px; }
+      .fab { width: 42px; height: 42px; font-size: 18px; }
+
+      /* 알림 배너 */
+      .alert-banner { font-size: 12px; padding: 10px 12px; }
+    }
+
+    @media (max-width: 400px) {
+      .hero-big-temp { font-size: 44px; }
       .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .form-grid { grid-template-columns: 1fr; }
+      .hg-col { width: 54px; }
     }
   </style>
 </head>
