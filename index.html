@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg">
+  <title>나만의 옷차림 가이드 — 서울</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    header .location {
+      font-size: 14px;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    /* ── Temperature Table ── */
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title .icon { font-size: 24px; }
+
+    .temp-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-bottom: 40px;
+    }
+    .temp-table thead th {
+      background: #1a1a2e;
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 14px 12px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .temp-table tbody td {
+      padding: 14px 12px;
+      font-size: 14px;
+      text-align: center;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: middle;
+    }
+    .temp-table tbody tr:last-child td { border-bottom: none; }
+    .temp-table tbody tr:hover { background: #fafbfc; }
+    .temp-table tbody tr.active { background: #eef6ff; }
+
+    /* 기온 바 스타일 */
+    .temp-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .temp-bar {
+      display: inline-block;
+      width: 5px;
+      height: 36px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .temp-bar-label {
+      font-size: 18px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* Temperature range badge */
+    .temp-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .temp-hot       { background: #fee2e2; color: #dc2626; }
+    .temp-warm      { background: #ffedd5; color: #ea580c; }
+    .temp-mild      { background: #fef9c3; color: #ca8a04; }
+    .temp-cool      { background: #d1fae5; color: #059669; }
+    .temp-chilly    { background: #dbeafe; color: #2563eb; }
+    .temp-cold      { background: #e0e7ff; color: #4f46e5; }
+    .temp-vcold     { background: #ede9fe; color: #7c3aed; }
+    .temp-freezing  { background: #f3e8ff; color: #9333ea; }
+
+    .feel-label {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    /* Clothing tags */
+    .clothes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+    }
+    .clothes .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .clothes .tag.outer   { background: #dbeafe; color: #1d4ed8; }
+    .clothes .tag.top     { background: #d1fae5; color: #047857; }
+    .clothes .tag.bottom  { background: #fef3c7; color: #b45309; }
+    .clothes .tag.acc     { background: #fce7f3; color: #be185d; }
+
+    /* ── Time-of-day Section ── */
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .time-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .time-card .period {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .time-card .hours {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+    .time-card .tip {
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.7;
+      text-align: left;
+    }
+    .time-icon { font-size: 28px; margin-bottom: 8px; }
+
+    /* ── Weather Condition Cards ── */
+    .weather-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .weather-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .weather-card .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .weather-card ul {
+      list-style: none;
+      padding: 0;
+    }
+    .weather-card li {
+      font-size: 13px;
+      color: #4b5563;
+      padding: 4px 0;
+      padding-left: 18px;
+      position: relative;
+    }
+    .weather-card li::before {
+      content: '•';
+      position: absolute;
+      left: 4px;
+      color: #9ca3af;
+    }
+
+    /* ── Feels-like Section ── */
+    .feels-like-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-bottom: 40px;
+    }
+    .feels-like-table thead th {
+      background: #374151;
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 12px;
+      text-align: center;
+    }
+    .feels-like-table tbody td {
+      padding: 12px;
+      font-size: 13px;
+      text-align: center;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .feels-like-table tbody tr:last-child td { border-bottom: none; }
+
+    /* ── Outfit List ── */
+    .outfit-list {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-bottom: 40px;
+    }
+    .outfit-row {
+      display: flex;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.2s;
+    }
+    .outfit-row:last-child { border-bottom: none; }
+    .outfit-row:hover { background: #fafbfc; }
+    .outfit-row .bar {
+      width: 5px;
+      min-height: 44px;
+      border-radius: 3px;
+      margin-right: 20px;
+      flex-shrink: 0;
+    }
+    .outfit-info { flex: 1; }
+    .outfit-temp {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .outfit-desc {
+      font-size: 15px;
+      color: #6b7280;
+    }
+    .outfit-row.active {
+      background: #eef6ff;
+      border-left: 3px solid #4299e1;
+    }
+    .outfit-row.active .outfit-temp::after {
+      content: ' 지금';
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      background: #4299e1;
+      padding: 2px 8px;
+      border-radius: 8px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* ── Hourly Graph ── */
+    .hourly-graph-wrap {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-bottom: 40px;
+      overflow-x: auto;
+      padding: 24px 12px 16px;
+    }
+    .hg-table {
+      display: flex;
+      min-width: max-content;
+    }
+    .hg-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 72px;
+      flex-shrink: 0;
+    }
+    .hg-hour {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+    .hg-col.now .hg-hour { color: #1a1a2e; font-weight: 700; }
+    .hg-icon { font-size: 28px; margin-bottom: 12px; }
+    .hg-temp {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+    .hg-compare {
+      font-size: 12px;
+      color: #93c5fd;
+      margin-top: 8px;
+      margin-bottom: 12px;
+      height: 16px;
+    }
+    .hg-compare.down { color: #93c5fd; }
+    .hg-compare.up { color: #fca5a5; }
+    .hg-pop-row {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 16px;
+    }
+    .hg-pop-row .pop-icon { font-size: 12px; }
+    .hg-col.hg-sun { opacity: 0.85; }
+    .hg-col.hg-sun .hg-hour { color: #9ca3af; font-size: 12px; }
+
+    /* ── Alert Banners ── */
+    .alert-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .alert-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      animation: alertPulse 2s ease-in-out infinite;
+    }
+    @keyframes alertPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+    .alert-banner .alert-icon { font-size: 20px; flex-shrink: 0; }
+    .alert-banner .alert-text { flex: 1; }
+    .alert-rain {
+      background: rgba(59,130,246,0.2);
+      border: 1px solid rgba(59,130,246,0.4);
+    }
+    .alert-snow {
+      background: rgba(168,85,247,0.2);
+      border: 1px solid rgba(168,85,247,0.4);
+    }
+    .alert-dust {
+      background: rgba(245,158,11,0.2);
+      border: 1px solid rgba(245,158,11,0.4);
+    }
+    .alert-banner.hidden { display: none; }
+
+    .today-loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+    .today-updated {
+      font-size: 11px;
+      opacity: 0.6;
+      text-align: right;
+      margin-top: 10px;
+    }
+
+    /* ── Verdict badges ── */
+    .verdict {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .verdict.good { background: #d1fae5; color: #047857; }
+    .verdict.chilly { background: #dbeafe; color: #2563eb; }
+    .verdict.cold { background: #e0e7ff; color: #4f46e5; }
+    .verdict.hot { background: #fee2e2; color: #dc2626; }
+    .memo { font-size: 12px; color: #6b7280; text-align: left; }
+
+    /* ── Record Form ── */
+    .record-form {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px 28px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .record-form h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #f9fafb;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #6366f1;
+      background: #fff;
+    }
+    .form-group textarea { resize: vertical; min-height: 42px; }
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: #6366f1; color: #fff; }
+    .btn-delete { background: #fee2e2; color: #dc2626; }
+    .btn-delete:hover { background: #fecaca; }
+    .record-empty {
+      text-align: center;
+      padding: 24px;
+      color: #9ca3af;
+      font-size: 13px;
+    }
+    /* delete btn in table */
+    .row-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+      padding: 2px 6px;
+    }
+    .row-btn:hover { opacity: 1; }
+    .row-actions { display: flex; gap: 4px; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    /* ── Floating buttons ── */
+    .fab-group {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 999;
+    }
+    .fab {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+    .fab:active { transform: scale(0.95); }
+    .fab-top {
+      background: #1a1a2e;
+      color: #fff;
+    }
+    .fab-refresh {
+      background: #fff;
+      color: #1a1a2e;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* ── Today Hero ── */
+    .today-hero {
+      border-radius: 24px;
+      padding: 32px;
+      color: #fff;
+      margin-bottom: 40px;
+      transition: background 0.5s ease, box-shadow 0.5s ease;
+    }
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .today-hero .hero-date {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+    .hero-clock {
+      font-size: 14px;
+      opacity: 0.85;
+      font-weight: 600;
+    }
+    .hero-temp-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+    .hero-big-temp {
+      font-size: 72px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .hero-temp-info {
+      padding-top: 10px;
+    }
+    .hero-temp-info .weather-label {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .hero-temp-info .minmax {
+      font-size: 15px;
+      opacity: 0.9;
+    }
+    .hero-compare {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-bottom: 24px;
+    }
+    /* glass cards */
+    .glass {
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      padding: 16px 20px;
+    }
+    .hero-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .hero-cards .card-label {
+      font-size: 12px;
+      opacity: 0.75;
+      margin-bottom: 6px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .hero-cards .card-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .hero-stat {
+      text-align: center;
+    }
+    .hero-stat .hs-icon { font-size: 20px; margin-bottom: 4px; }
+    .hero-stat .hs-value { font-size: 20px; font-weight: 700; }
+    .hero-stat .hs-label { font-size: 11px; opacity: 0.7; }
+    .hero-updated {
+      font-size: 11px;
+      opacity: 0.5;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .temp-table { display: block; overflow-x: auto; }
+      header h1 { font-size: 22px; }
+      .fab-group { bottom: 20px; right: 20px; }
+      .fab { width: 44px; height: 44px; font-size: 18px; }
+      .today-hero { padding: 24px; }
+      .hero-big-temp { font-size: 56px; }
+      .hero-cards { grid-template-columns: 1fr; }
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+
+    <!-- ──────────────── 오늘의 날씨 & 옷 추천 (동적) ──────────────── -->
+    <div class="today-hero" id="todayHero">
+      <div class="today-loading">날씨 데이터를 불러오는 중...</div>
+    </div>
+
+    <!-- ──────────────── 시간대별 날씨 그래프 ──────────────── -->
+    <div class="section-title"><span class="icon">📈</span> 시간대별 날씨</div>
+    <div class="hourly-graph-wrap" id="hourlyGraph">
+      <div class="today-loading" style="padding:20px">날씨 데이터를 불러오면 표시됩니다</div>
+    </div>
+
+    <!-- ──────────────── 1. 기온별 옷차림 표 ──────────────── -->
+    <div class="section-title"><span class="icon">🌡️</span> 기온별 옷차림</div>
+
+    <table class="temp-table" id="outfitTable">
+      <thead>
+        <tr>
+          <th>기온 범위</th>
+          <th>체감</th>
+          <th>아우터</th>
+          <th>상의</th>
+          <th>하의</th>
+          <th>소품 / 기타</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-min="28" data-max="99">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#e53e3e"></span><span class="temp-bar-label" style="color:#e53e3e">28° ~</span></div></td>
+          <td>🥵 매우 더움</td>
+          <td><div class="clothes"><span class="tag outer">없음</span></div></td>
+          <td><div class="clothes"><span class="tag top">반팔티</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">반바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">샌들</span></div></td>
+        </tr>
+        <tr data-min="23" data-max="27">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#ed8936"></span><span class="temp-bar-label" style="color:#ed8936">23~27°</span></div></td>
+          <td>😎 더움</td>
+          <td><div class="clothes"><span class="tag outer">없음</span></div></td>
+          <td><div class="clothes"><span class="tag top">반팔티</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">반바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">운동화</span></div></td>
+        </tr>
+        <tr data-min="20" data-max="22">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#ecc94b"></span><span class="temp-bar-label" style="color:#b7950b">20~22°</span></div></td>
+          <td>😊 쾌적</td>
+          <td><div class="clothes"><span class="tag outer">없음</span></div></td>
+          <td><div class="clothes"><span class="tag top">맨투맨</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">반바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">운동화</span></div></td>
+        </tr>
+        <tr data-min="17" data-max="19">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#a3d977"></span><span class="temp-bar-label" style="color:#6b9e3a">17~19°</span></div></td>
+          <td>🙂 선선</td>
+          <td><div class="clothes"><span class="tag outer">가디건</span></div></td>
+          <td><div class="clothes"><span class="tag top">얇은 긴팔티</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">긴바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">—</span></div></td>
+        </tr>
+        <tr data-min="12" data-max="16">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#48bb78"></span><span class="temp-bar-label" style="color:#2f855a">12~16°</span></div></td>
+          <td>😐 약간 쌀쌀</td>
+          <td><div class="clothes"><span class="tag outer">얇은 자켓</span></div></td>
+          <td><div class="clothes"><span class="tag top">긴팔티</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">긴바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">—</span></div></td>
+        </tr>
+        <tr data-min="10" data-max="11">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#38b2ac"></span><span class="temp-bar-label" style="color:#2c7a7b">10~11°</span></div></td>
+          <td>😬 쌀쌀</td>
+          <td><div class="clothes"><span class="tag outer">자켓</span></div></td>
+          <td><div class="clothes"><span class="tag top">맨투맨</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">긴바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">—</span></div></td>
+        </tr>
+        <tr data-min="6" data-max="9">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#00bcd4"></span><span class="temp-bar-label" style="color:#0097a7">6~9°</span></div></td>
+          <td>😬 꽤 추움</td>
+          <td><div class="clothes"><span class="tag outer">코트</span><span class="tag outer">두툼 자켓</span></div></td>
+          <td><div class="clothes"><span class="tag top">니트</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">긴바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">—</span></div></td>
+        </tr>
+        <tr data-min="0" data-max="5">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#4299e1"></span><span class="temp-bar-label" style="color:#2b6cb0">0~5°</span></div></td>
+          <td>🥶 추움</td>
+          <td><div class="clothes"><span class="tag outer">숏패딩</span></div></td>
+          <td><div class="clothes"><span class="tag top">터틀넥</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">기모 긴바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">—</span></div></td>
+        </tr>
+        <tr data-min="-7" data-max="-1">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#5b6abf"></span><span class="temp-bar-label" style="color:#5b6abf">-7~-1°</span></div></td>
+          <td>🥶 매우 추움</td>
+          <td><div class="clothes"><span class="tag outer">롱패딩</span></div></td>
+          <td><div class="clothes"><span class="tag top">터틀넥</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">기모 긴바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">—</span></div></td>
+        </tr>
+        <tr data-min="-12" data-max="-8">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#5b4abf"></span><span class="temp-bar-label" style="color:#5b4abf">-12~-8°</span></div></td>
+          <td>🧊 극한</td>
+          <td><div class="clothes"><span class="tag outer">롱패딩</span></div></td>
+          <td><div class="clothes"><span class="tag top">터틀넥</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">기모 긴바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">목도리</span></div></td>
+        </tr>
+        <tr data-min="-99" data-max="-13">
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#4c3bbf"></span><span class="temp-bar-label" style="color:#4c3bbf">~ -13°</span></div></td>
+          <td>🧊 극한</td>
+          <td><div class="clothes"><span class="tag outer">롱패딩</span></div></td>
+          <td><div class="clothes"><span class="tag top">터틀넥</span><span class="tag top">히트텍</span></div></td>
+          <td><div class="clothes"><span class="tag bottom">기모 긴바지</span></div></td>
+          <td><div class="clothes"><span class="tag acc">목도리</span><span class="tag acc">장갑</span></div></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ──────────────── 2~4. 숨김 영역 (데이터 보존) ──────────────── -->
+    <div style="display:none">
+    <div class="section-title"><span class="icon">🌦️</span> 기상 조건별 옷차림 보정</div>
+
+    <div class="weather-grid">
+      <!-- 흐림 -->
+      <div class="weather-card">
+        <div class="card-title">☁️ 흐림</div>
+        <ul>
+          <li>일사량 감소 → 체감 <strong>1~2°C 낮음</strong></li>
+          <li>기온표보다 <strong>한 단계 위</strong> 옷차림 권장</li>
+          <li>얇은 겉옷 하나 더 챙기기</li>
+          <li>갑작스런 비 대비 → 우산 휴대</li>
+        </ul>
+      </div>
+      <!-- 비 -->
+      <div class="weather-card">
+        <div class="card-title">🌧️ 비</div>
+        <ul>
+          <li>체감온도 <strong>2~4°C 하락</strong></li>
+          <li><strong>방수 자켓</strong> 또는 우비 필수</li>
+          <li>면 소재 ✕ → 폴리·나일론 소재 권장</li>
+          <li>신발: <strong>방수 운동화</strong> 또는 레인부츠</li>
+          <li>접이식 우산 항시 휴대</li>
+          <li>흰색 / 밝은 하의 피하기</li>
+        </ul>
+      </div>
+      <!-- 눈 -->
+      <div class="weather-card">
+        <div class="card-title">❄️ 눈</div>
+        <ul>
+          <li>체감온도 <strong>3~5°C 하락</strong></li>
+          <li><strong>방수 + 보온</strong> 동시 필요</li>
+          <li>두꺼운 패딩 or 방수 코트</li>
+          <li>신발: <strong>방수 부츠</strong> (미끄럼 방지)</li>
+          <li>목도리·비니·장갑 필수</li>
+          <li>바지 밑단이 젖지 않게 부츠인 고려</li>
+        </ul>
+      </div>
+      <!-- 안개 -->
+      <div class="weather-card">
+        <div class="card-title">🌫️ 안개 / 미세먼지</div>
+        <ul>
+          <li>습기로 체감 <strong>1~2°C 하락</strong></li>
+          <li>미세먼지 나쁨 → <strong>KF94 마스크</strong></li>
+          <li>밝은 색 옷 (시인성 확보)</li>
+          <li>자전거 / 도보 통근 시 반사 소재</li>
+        </ul>
+      </div>
+      <!-- 강한 자외선 -->
+      <div class="weather-card">
+        <div class="card-title">☀️ 강한 자외선</div>
+        <ul>
+          <li>자외선지수 6 이상 → 피부 보호</li>
+          <li><strong>긴팔 + 모자</strong> 조합 권장</li>
+          <li>UV 차단 기능 있는 얇은 아우터</li>
+          <li>선크림 SPF50+ / PA++++</li>
+          <li>선글라스 (UV400)</li>
+        </ul>
+      </div>
+      <!-- 황사 -->
+      <div class="weather-card">
+        <div class="card-title">🟡 황사</div>
+        <ul>
+          <li>봄철 특히 주의</li>
+          <li><strong>KF94 마스크</strong> 필수</li>
+          <li>외출 후 옷 바로 세탁</li>
+          <li>모자로 머리카락 보호</li>
+          <li>렌즈보다 안경 권장</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-title"><span class="icon">📊</span> 일교차별 레이어링 전략</div>
+
+    <table class="feels-like-table">
+      <thead>
+        <tr>
+          <th>일교차</th>
+          <th>레이어링 전략</th>
+          <th>추천 조합 예시</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>5°C 이하</strong></td>
+          <td>한 벌로 OK</td>
+          <td>기온표 그대로 적용</td>
+        </tr>
+        <tr>
+          <td><strong>5 ~ 10°C</strong></td>
+          <td>벗기 쉬운 겉옷 1장 추가</td>
+          <td>니트 + 자켓 (오후 자켓 탈의)</td>
+        </tr>
+        <tr>
+          <td><strong>10 ~ 15°C</strong></td>
+          <td>3단 레이어드 필수</td>
+          <td>이너 + 미드레이어 + 아우터</td>
+        </tr>
+        <tr>
+          <td><strong>15°C 이상</strong></td>
+          <td>여름+겨울 동시 대비</td>
+          <td>반팔 + 두꺼운 아우터 (가방에)</td>
+        </tr>
+      </tbody>
+    </table>
+    </div><!-- /숨김 영역 끝 -->
+
+    <!-- ──────────────── 6. 나의 체감 기록 ──────────────── -->
+    <div class="section-title"><span class="icon">📝</span> 나의 옷차림 체감 기록</div>
+
+    <!-- 입력 폼 -->
+    <div class="record-form">
+      <h3>오늘의 옷차림 기록하기</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>날짜</label>
+          <input type="date" id="recDate">
+        </div>
+        <div class="form-group">
+          <label>상의</label>
+          <input type="text" id="recTop" placeholder="예: 얇은 긴팔티">
+        </div>
+        <div class="form-group">
+          <label>아우터</label>
+          <input type="text" id="recOuter" placeholder="예: 긴팔 후드, 자켓">
+        </div>
+        <div class="form-group">
+          <label>하의</label>
+          <input type="text" id="recBottom" placeholder="예: 추리닝 긴바지">
+        </div>
+        <div class="form-group">
+          <label>낮 체감</label>
+          <select id="recDay">
+            <option value="">-- 선택 --</option>
+            <option value="더움">🥵 더움</option>
+            <option value="약간 더움">😅 약간 더움</option>
+            <option value="딱 적당">👍 딱 적당</option>
+            <option value="살짝 추움">🌬️ 살짝 추움</option>
+            <option value="추움">🥶 추움</option>
+            <option value="외출 안 함">🏠 외출 안 함</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>밤 체감</label>
+          <select id="recNight">
+            <option value="">-- 선택 --</option>
+            <option value="더움">🥵 더움</option>
+            <option value="약간 더움">😅 약간 더움</option>
+            <option value="딱 적당">👍 딱 적당</option>
+            <option value="살짝 추움">🌬️ 살짝 추움</option>
+            <option value="추움">🥶 추움</option>
+            <option value="외출 안 함">🏠 외출 안 함</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div class="form-group">
+          <label>메모 (선택)</label>
+          <textarea id="recMemo" rows="1" placeholder="기억해둘 것이 있다면"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="saveRecord()">기록 저장</button>
+      </div>
+    </div>
+
+    <!-- 기록 테이블 (동적 렌더링) -->
+    <table class="temp-table" id="recordTable">
+      <thead>
+        <tr>
+          <th>날짜</th>
+          <th>기온</th>
+          <th>날씨</th>
+          <th>옷차림</th>
+          <th>낮</th>
+          <th>밤</th>
+          <th>메모</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="recordBody"></tbody>
+    </table>
+
+
+    <footer>
+      마지막 업데이트: 2026년 4월 · 서울 기준 · 개인 맞춤 옷차림 가이드
+    </footer>
+
+  </div>
+
+  <!-- Floating Buttons -->
+  <div class="fab-group">
+    <button class="fab fab-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="맨 위로">↑</button>
+    <button class="fab fab-refresh" onclick="location.reload()" title="새로고침">↻</button>
+  </div>
+
+<script>
+// ══════════════════════════════════════
+// ── 설정 ──
+// ══════════════════════════════════════
+const KMA_KEY = 'd60351454c3643645bea38ff1bca33b4492dfdd5176cfd0cb7f7b0d3fc61e47c';
+const AIR_KEY = 'd60351454c3643645bea38ff1bca33b4492dfdd5176cfd0cb7f7b0d3fc61e47c';
+const NX = 60, NY = 127; // 서울 격자좌표
+const ASOS_STN = 108; // 서울 종관기상관측소
+const AIR_STATION = '중구'; // 미세먼지 측정소명
+
+// ── 기온별 옷 추천 (체감 기록 반영) ──
+// 2/15: 1~15°C → 반팔+셔츠+패딩+비니 = 딱 적당 (아우터로 커버)
+// 3/31: 11~19°C → 반팔+두꺼운가디건 = 매우 더움! (가디건 과함)
+// 4/1: 19°C 낮 → 긴팔+후드 = 딱 적당
+// 4/1: 11°C 밤 → 긴팔+후드 = 살짝 추움 (자켓 추가하면 OK)
+// 4/2: ~5°C 밤 → 긴팔+후드+얇은자켓 = 충분
+function clothesFor(temp) {
+  if (temp >= 28) return { outer:'', top:'반팔티', bottom:'반바지', acc:'샌들' };
+  if (temp >= 23) return { outer:'', top:'반팔티', bottom:'반바지', acc:'' };
+  if (temp >= 20) return { outer:'', top:'맨투맨', bottom:'반바지', acc:'' };
+  if (temp >= 17) return { outer:'가디건', top:'얇은 긴팔티', bottom:'긴바지', acc:'' };
+  if (temp >= 12) return { outer:'얇은 자켓', top:'긴팔티', bottom:'긴바지', acc:'' };
+  if (temp >= 10) return { outer:'자켓', top:'맨투맨', bottom:'긴바지', acc:'' };
+  if (temp >= 6)  return { outer:'코트/두툼자켓', top:'니트', bottom:'긴바지', acc:'' };
+  if (temp >= 0)  return { outer:'숏패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'' };
+  if (temp >= -7) return { outer:'롱패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'' };
+  if (temp >= -10) return { outer:'롱패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'목도리' };
+  if (temp >= -12) return { outer:'롱패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'목도리' };
+  return { outer:'롱패딩', top:'터틀넥+히트텍', bottom:'기모 긴바지', acc:'목도리·장갑' };
+}
+
+// ── 미세먼지 등급 (한국 기준) ──
+function dustLevel(pm25, pm10) {
+  let level = '좋음', grade = 0;
+  if (pm25 > 75 || pm10 > 150) { level = '매우나쁨'; grade = 3; }
+  else if (pm25 > 35 || pm10 > 80) { level = '나쁨'; grade = 2; }
+  else if (pm25 > 15 || pm10 > 30) { level = '보통'; grade = 1; }
+  return { level, grade, pm25: Math.round(pm25), pm10: Math.round(pm10) };
+}
+
+// ══════════════════════════════════════
+// ── 기상청 API 헬퍼 ──
+// ══════════════════════════════════════
+
+// 가장 최근 발표 시각 계산
+function getBaseDateTime() {
+  const now = new Date();
+  const baseTimes = ['2300','2000','1700','1400','1100','0800','0500','0200'];
+  const hh = now.getHours();
+  const mm = now.getMinutes();
+  const hhmm = hh * 100 + mm;
+
+  function fmtDate(d) {
+    return d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  }
+
+  // 0210 이전이면 전날 2300 사용
+  if (hhmm < 210) {
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    return { baseDate: fmtDate(yesterday), baseTime: '2300' };
+  }
+
+  // 가장 최근 발표 시각 찾기 (발표 후 10분 뒤부터 가능)
+  for (const bt of baseTimes) {
+    const btNum = parseInt(bt);
+    const available = btNum + 10; // 예: 0200 → 0210
+    if (hhmm >= available) {
+      return { baseDate: fmtDate(now), baseTime: bt };
+    }
+  }
+  // fallback
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  return { baseDate: fmtDate(yesterday), baseTime: '2300' };
+}
+
+// 기상청 하늘상태(SKY) + 강수형태(PTY) → 아이콘/텍스트
+function kmaWeatherInfo(sky, pty) {
+  // PTY 우선 (강수 있으면)
+  if (pty === 1) return ['비', '🌧️'];
+  if (pty === 2) return ['비/눈', '🌧️'];
+  if (pty === 3) return ['눈', '❄️'];
+  if (pty === 4) return ['소나기', '🌦️'];
+  // SKY
+  if (sky === 1) return ['맑음', '☀️'];
+  if (sky === 3) return ['구름많음', '⛅'];
+  if (sky === 4) return ['흐림', '☁️'];
+  return ['맑음', '☀️'];
+}
+
+// ── 메인 fetch (기상청 → Open-Meteo 백업) ──
+async function fetchWeather() {
+  const hero = document.getElementById('todayHero');
+  hero.innerHTML = '<div class="today-loading">🔄 날씨 데이터를 불러오는 중...</div>';
+
+  try {
+    const { baseDate, baseTime } = getBaseDateTime();
+    const today = new Date();
+    const todayStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+
+    let items = null;
+    let dataSource = '';
+
+    // 1차: 기상청 시도
+    try {
+      const kmaUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${KMA_KEY}&numOfRows=1000&pageNo=1&dataType=JSON&base_date=${baseDate}&base_time=${baseTime}&nx=${NX}&ny=${NY}`;
+      const kmaRes = await fetch(kmaUrl);
+      if (!kmaRes.ok) throw new Error('KMA ' + kmaRes.status);
+      const kmaData = await kmaRes.json();
+      if (!kmaData.response?.body?.items?.item) throw new Error('KMA no data');
+      items = kmaData.response.body.items.item;
+      dataSource = '기상청 단기예보';
+    } catch(e) {
+      console.log('기상청 실패, Open-Meteo로 전환:', e.message);
+    }
+
+    // 2차: Open-Meteo 백업
+    if (!items) {
+      const omUrl = `https://api.open-meteo.com/v1/forecast?latitude=37.6027&longitude=126.9291&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=Asia/Seoul&forecast_days=1`;
+      const omRes = await fetch(omUrl);
+      const om = await omRes.json();
+      dataSource = 'Open-Meteo (기상청 키 활성화 대기 중)';
+
+      // Open-Meteo → 기상청 형식으로 변환
+      items = [];
+      const omTemps = om.hourly.temperature_2m;
+      const omWinds = om.hourly.wind_speed_10m;
+      const omHumids = om.hourly.relative_humidity_2m;
+      const omPops = om.hourly.precipitation_probability;
+      const omCodes = om.hourly.weather_code;
+
+      // TMN, TMX
+      items.push({ fcstDate: todayStr, fcstTime:'0600', category:'TMN', fcstValue: String(Math.round(om.daily.temperature_2m_min[0])) });
+      items.push({ fcstDate: todayStr, fcstTime:'1500', category:'TMX', fcstValue: String(Math.round(om.daily.temperature_2m_max[0])) });
+
+      for (let h = 0; h < 24; h++) {
+        const ft = String(h).padStart(2,'0') + '00';
+        items.push({ fcstDate: todayStr, fcstTime: ft, category:'TMP', fcstValue: String(Math.round(omTemps[h])) });
+        items.push({ fcstDate: todayStr, fcstTime: ft, category:'WSD', fcstValue: String(Math.round(omWinds[h])) });
+        items.push({ fcstDate: todayStr, fcstTime: ft, category:'REH', fcstValue: String(Math.round(omHumids[h])) });
+        items.push({ fcstDate: todayStr, fcstTime: ft, category:'POP', fcstValue: String(omPops[h] || 0) });
+        // weather_code → SKY, PTY
+        const c = omCodes[h];
+        let sky = 1, pty = 0;
+        if (c >= 61 && c <= 67 || c >= 80 && c <= 82 || c >= 95) { sky = 4; pty = 1; }
+        else if (c >= 71 && c <= 77 || c >= 85 && c <= 86) { sky = 4; pty = 3; }
+        else if (c >= 51 && c <= 57) { sky = 4; pty = 1; }
+        else if (c >= 45) { sky = 4; }
+        else if (c >= 3) { sky = 4; }
+        else if (c >= 2) { sky = 3; }
+        items.push({ fcstDate: todayStr, fcstTime: ft, category:'SKY', fcstValue: String(sky) });
+        items.push({ fcstDate: todayStr, fcstTime: ft, category:'PTY', fcstValue: String(pty) });
+        const pcpVal = om.hourly.precipitation[h] || 0;
+        items.push({ fcstDate: todayStr, fcstTime: ft, category:'PCP', fcstValue: pcpVal > 0 ? pcpVal+'mm' : '강수없음' });
+      }
+    }
+
+    // 미세먼지 (환경공단 → Open-Meteo 백업)
+    let airRes = null;
+    let airSource = 'kma';
+    try {
+      const airUrl = `https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=${AIR_KEY}&returnType=json&numOfRows=1&pageNo=1&stationName=${encodeURIComponent(AIR_STATION)}&dataTerm=DAILY&ver=1.0`;
+      const r = await fetch(airUrl);
+      if (!r.ok) throw new Error('Air ' + r.status);
+      airRes = await r.json();
+    } catch(e) {
+      airSource = 'openmeteo';
+      try {
+        const r = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=37.6027&longitude=126.9291&hourly=pm10,pm2_5&timezone=Asia/Seoul&forecast_days=1`);
+        airRes = await r.json();
+      } catch(e2) {}
+    }
+
+    // 오늘 날짜 데이터만 추출, 시간별로 정리
+    const hourlyMap = {}; // { "0600": { TMP:5, SKY:1, PTY:0, POP:10, WSD:3, REH:60 } }
+
+    for (const item of items) {
+      if (item.fcstDate !== todayStr) continue;
+      const h = item.fcstTime; // "0600"
+      if (!hourlyMap[h]) hourlyMap[h] = {};
+      const val = item.fcstValue;
+      hourlyMap[h][item.category] = isNaN(val) ? val : Number(val);
+    }
+
+    // TMN, TMX 찾기 (모든 날짜에서)
+    let tMin = null, tMax = null;
+    for (const item of items) {
+      if (item.category === 'TMN' && item.fcstDate === todayStr) tMin = Number(item.fcstValue);
+      if (item.category === 'TMX' && item.fcstDate === todayStr) tMax = Number(item.fcstValue);
+    }
+
+    // 시간별 배열 만들기 (0~23시)
+    const temps = [], winds = [], humids = [], pops = [], skys = [], ptys = [], pcps = [];
+    for (let h = 0; h < 24; h++) {
+      const key = String(h).padStart(2,'0') + '00';
+      const d = hourlyMap[key] || {};
+      temps[h] = d.TMP ?? null;
+      winds[h] = d.WSD ?? null;
+      humids[h] = d.REH ?? null;
+      pops[h] = d.POP ?? 0;
+      skys[h] = d.SKY ?? 1;
+      ptys[h] = d.PTY ?? 0;
+      // PCP: "강수없음" 또는 "1.0mm" 형태
+      const raw = d.PCP ?? '강수없음';
+      const pcp = parseFloat(String(raw).replace('mm',''));
+      pcps[h] = isNaN(pcp) ? 0 : pcp;
+    }
+
+    // null 채우기 (데이터 없는 시간대)
+    const validTemps = temps.filter(t => t !== null);
+    if (tMin === null && validTemps.length) tMin = Math.round(Math.min(...validTemps));
+    if (tMax === null && validTemps.length) tMax = Math.round(Math.max(...validTemps));
+    tMin = Math.round(tMin); tMax = Math.round(tMax);
+
+    const dayDiff = tMax - tMin;
+    const maxWind = Math.round(Math.max(...winds.filter(w => w !== null)));
+    const validHumids = humids.filter(h => h !== null);
+    const avgHumid = validHumids.length ? Math.round(validHumids.reduce((a,b)=>a+b,0)/validHumids.length) : 0;
+    const maxPop = Math.max(...pops);
+
+    // 대표 날씨 (가장 빈번한 조합)
+    const validSkys = skys.filter(s => s !== null);
+    const modeSky = validSkys.length ? validSkys.sort((a,b) =>
+      validSkys.filter(v=>v===a).length - validSkys.filter(v=>v===b).length).pop() : 1;
+    const hasRain = ptys.some(p => p === 1 || p === 2 || p === 4);
+    const hasSnow = ptys.some(p => p === 2 || p === 3);
+    const modePty = hasRain ? 1 : hasSnow ? 3 : 0;
+    const [dayLabel, dayIcon] = kmaWeatherInfo(modeSky, modePty);
+
+    // 체감 보정
+    const feelsMax = tMax - 1;
+
+    // 시간대별 평균
+    function avgSlot(start, end) {
+      const v = temps.slice(start, end).filter(t => t !== null);
+      return v.length ? Math.round(v.reduce((a,b)=>a+b,0)/v.length) : null;
+    }
+    const slots = [
+      { label:'🌅 아침 6-9시', temp: avgSlot(6,9) },
+      { label:'☀️ 오전 9-12시', temp: avgSlot(9,12) },
+      { label:'🌤️ 오후 12-17시', temp: avgSlot(12,17) },
+      { label:'🌇 저녁 17-21시', temp: avgSlot(17,21) },
+      { label:'🌙 밤 21시~', temp: avgSlot(21,24) },
+    ].filter(s => s.temp !== null);
+
+    // 비/눈 시간대 문자열
+    function precipHourStr(checkFn) {
+      const hrs = ptys.map((p,i) => checkFn(p) ? i : -1).filter(h => h >= 0);
+      if (!hrs.length) return '';
+      return `${hrs[0]}시~${hrs[hrs.length-1]+1}시`;
+    }
+
+    // 미세먼지 파싱
+    let dust = { level:'좋음', grade:0, pm25:0, pm10:0 };
+    try {
+      if (airRes && airSource === 'kma') {
+        const airItem = airRes.response.body.items[0];
+        if (airItem) {
+          dust = dustLevel(parseFloat(airItem.pm25Value)||0, parseFloat(airItem.pm10Value)||0);
+        }
+      } else if (airRes && airSource === 'openmeteo') {
+        const pm25Vals = airRes.hourly.pm2_5.slice(0,24).filter(v => v !== null);
+        const pm10Vals = airRes.hourly.pm10.slice(0,24).filter(v => v !== null);
+        const avgPm25 = pm25Vals.length ? pm25Vals.reduce((a,b)=>a+b,0)/pm25Vals.length : 0;
+        const avgPm10 = pm10Vals.length ? pm10Vals.reduce((a,b)=>a+b,0)/pm10Vals.length : 0;
+        dust = dustLevel(avgPm25, avgPm10);
+      }
+    } catch(e) {}
+
+    // 일출/일몰
+    let sunriseH = 6, sunriseM = 0, sunsetH = 18, sunsetM = 30;
+    try {
+      const sunRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.6027&longitude=126.9291&daily=sunrise,sunset&timezone=Asia/Seoul&forecast_days=1`);
+      const sunData = await sunRes.json();
+      const sr = sunData.daily.sunrise[0]; // "2026-04-02T06:16"
+      const ss = sunData.daily.sunset[0];
+      sunriseH = parseInt(sr.slice(11,13)); sunriseM = parseInt(sr.slice(14,16));
+      sunsetH = parseInt(ss.slice(11,13)); sunsetM = parseInt(ss.slice(14,16));
+    } catch(e) {}
+
+    // 날짜/시간
+    const now = new Date();
+    const dayNames = ['일','월','화','수','목','금','토'];
+    const dateStr = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${dayNames[now.getDay()]}요일`;
+    const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+    // ── 알림 배너 ──
+    let alerts = '';
+
+    if (hasRain) {
+      const hrs = precipHourStr(p => p===1||p===2||p===4);
+      alerts += `<div class="alert-banner alert-rain">
+        <span class="alert-icon">☂️</span>
+        <span class="alert-text"><strong>우산 챙기세요!</strong> 비 소식 있음${hrs ? ' ('+hrs+')' : ''} · 강수확률 최대 ${maxPop}%</span>
+      </div>`;
+    }
+    if (hasSnow) {
+      const hrs = precipHourStr(p => p===2||p===3);
+      alerts += `<div class="alert-banner alert-snow">
+        <span class="alert-icon">☂️</span>
+        <span class="alert-text"><strong>우산 + 방수부츠!</strong> 눈 소식 있음${hrs ? ' ('+hrs+')' : ''} · 미끄럼 주의</span>
+      </div>`;
+    }
+    if (!hasRain && !hasSnow && maxPop >= 30) {
+      alerts += `<div class="alert-banner alert-rain">
+        <span class="alert-icon">🌂</span>
+        <span class="alert-text"><strong>접이식 우산 챙기세요!</strong> 강수확률 ${maxPop}% — 비 올 수도 있어요</span>
+      </div>`;
+    }
+
+    // ── 옷 추천 ──
+    const mainClothes = clothesFor(Math.round((tMax + tMin) / 2));
+    const outfitParts = [mainClothes.top, mainClothes.outer, mainClothes.bottom].filter(Boolean);
+    const outfitStr = outfitParts.join(' + ');
+
+    // 아이템 (우산, 마스크 등)
+    const itemList = [];
+    if (hasRain || hasSnow || maxPop >= 30) itemList.push('우산');
+    if (dust.grade >= 2) itemList.push('KF94 마스크', '안경');
+    if (mainClothes.acc) itemList.push(mainClothes.acc);
+    const itemStr = itemList.length ? itemList.join(', ') : '없음';
+
+    // 현재 시간 기온
+    const curHour = now.getHours();
+    const curTemp = temps[curHour] !== null ? temps[curHour] : Math.round((tMax + tMin) / 2);
+
+    // 어제 같은 시간 비교 (hourly_history 활용)
+    let compareStr = '';
+    try {
+      const hist = JSON.parse(localStorage.getItem('hourly_history') || '{}');
+      const yd = new Date(now); yd.setDate(yd.getDate() - 1);
+      const ydStr = yd.getFullYear() + String(yd.getMonth()+1).padStart(2,'0') + String(yd.getDate()).padStart(2,'0');
+      if (hist[ydStr] && hist[ydStr][curHour] !== null && hist[ydStr][curHour] !== undefined) {
+        const diff = Math.round(curTemp - hist[ydStr][curHour]);
+        if (diff > 0) compareStr = `어제보다 ${diff}도 높아요.`;
+        else if (diff < 0) compareStr = `어제보다 ${Math.abs(diff)}도 낮아요.`;
+        else compareStr = '어제와 비슷해요.';
+      }
+    } catch(e) {}
+
+    // 미세먼지 표시 텍스트
+    const dustEmoji = dust.grade >= 2 ? '😷' : dust.grade >= 1 ? '😐' : '😊';
+
+    // ── 배경색 (시간 + 날씨) ──
+    const h = now.getHours();
+    let bg, shadow;
+    if (hasRain) {
+      // 비
+      bg = 'linear-gradient(135deg, #4a5568 0%, #5a6b7f 50%, #6b7d94 100%)';
+      shadow = '0 8px 32px rgba(74,85,104,0.35)';
+    } else if (hasSnow) {
+      // 눈
+      bg = 'linear-gradient(135deg, #a0aec0 0%, #b8c6d9 50%, #cfd8e3 100%)';
+      shadow = '0 8px 32px rgba(160,174,192,0.35)';
+    } else if (h >= 6 && h < 9) {
+      // 아침
+      bg = 'linear-gradient(135deg, #f6ad55 0%, #ed8936 50%, #dd6b20 100%)';
+      shadow = '0 8px 32px rgba(237,137,54,0.35)';
+    } else if (h >= 9 && h < 17) {
+      if (modeSky >= 4) {
+        // 낮 흐림
+        bg = 'linear-gradient(135deg, #718096 0%, #8e9aaf 50%, #a0aec0 100%)';
+        shadow = '0 8px 32px rgba(113,128,150,0.3)';
+      } else {
+        // 낮 맑음
+        bg = 'linear-gradient(135deg, #4299e1 0%, #5b9ef5 50%, #63b3ed 100%)';
+        shadow = '0 8px 32px rgba(66,153,225,0.35)';
+      }
+    } else if (h >= 17 && h < 20) {
+      // 저녁
+      bg = 'linear-gradient(135deg, #e53e3e 0%, #c05621 50%, #9b2c2c 100%)';
+      shadow = '0 8px 32px rgba(229,62,62,0.3)';
+    } else {
+      // 밤
+      bg = 'linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #1e2a3a 100%)';
+      shadow = '0 8px 32px rgba(26,32,44,0.5)';
+    }
+    hero.style.background = bg;
+    hero.style.boxShadow = shadow;
+
+    // ── 시간대별 그래프 ──
+    const graphEl = document.getElementById('hourlyGraph');
+    function hourIcon(sky, pty, hour) {
+      if (pty === 1 || pty === 4) return '🌧️';
+      if (pty === 2) return '🌧️';
+      if (pty === 3) return '❄️';
+      if (sky === 4) return '☁️';
+      if (sky === 3) return '⛅';
+      if (hour >= 19 || hour <= 5) return '🌙';
+      return '☀️';
+    }
+
+    // 어제 시간별 데이터 (localStorage)
+    const Y_HOURLY_KEY = 'hourly_history';
+    let yTemps = [];
+    try {
+      const hist = JSON.parse(localStorage.getItem(Y_HOURLY_KEY) || '{}');
+      // 어제 날짜 계산
+      const yd = new Date(now);
+      yd.setDate(yd.getDate() - 1);
+      const ydStr = yd.getFullYear() + String(yd.getMonth()+1).padStart(2,'0') + String(yd.getDate()).padStart(2,'0');
+      if (hist[ydStr]) yTemps = hist[ydStr];
+    } catch(e) {}
+
+    // 표시할 시간: 2시간 전부터 ~ 23시
+    const startH = Math.max(0, curHour - 2);
+    const displayHours = [];
+    for (let i = startH; i < 24; i++) { if (temps[i] !== null) displayHours.push(i); }
+
+    // 현재 시간 데이터 없으면 가장 가까운 시간을 "지금"으로
+    let nowIdx = curHour;
+    if (temps[curHour] === null && displayHours.length) {
+      nowIdx = displayHours.reduce((a, b) => Math.abs(b - curHour) < Math.abs(a - curHour) ? b : a);
+    }
+
+    // 일출/일몰 삽입 위치 계산
+    const sunriseAt = sunriseH + sunriseM / 60;
+    const sunsetAt = sunsetH + sunsetM / 60;
+    const sunriseLabel = `${sunriseH}:${String(sunriseM).padStart(2,'0')}`;
+    const sunsetLabel = `${sunsetH}:${String(sunsetM).padStart(2,'0')}`;
+
+    let graphHtml = '<div class="hg-table">';
+
+    let sunriseInserted = sunriseH < startH;
+    let sunsetInserted = sunsetH < startH;
+
+    displayHours.forEach((i, idx) => {
+      // 일출 삽입
+      if (!sunriseInserted && i >= sunriseH) {
+        graphHtml += `<div class="hg-col hg-sun">
+          <div class="hg-hour">${sunriseLabel}</div>
+          <div class="hg-icon">🌅</div>
+          <div class="hg-temp" style="color:#ed8936">일출</div>
+          <div class="hg-compare"></div>
+          <div class="hg-pop-row"></div>
+        </div>`;
+        sunriseInserted = true;
+      }
+
+      // 일몰 삽입
+      if (!sunsetInserted && i >= sunsetH) {
+        graphHtml += `<div class="hg-col hg-sun">
+          <div class="hg-hour">${sunsetLabel}</div>
+          <div class="hg-icon">🌇</div>
+          <div class="hg-temp" style="color:#e53e3e">일몰</div>
+          <div class="hg-compare"></div>
+          <div class="hg-pop-row"></div>
+        </div>`;
+        sunsetInserted = true;
+      }
+
+      const t = Math.round(temps[i]);
+      const pop = pops[i] || 0;
+      const icon = hourIcon(skys[i], ptys[i], i);
+      const isNow = i === nowIdx;
+      const hourLabel = isNow ? '지금' : `${i}시`;
+
+      // 어제 비교
+      let cmpHtml = '';
+      if (yTemps[i] !== undefined && yTemps[i] !== null) {
+        const diff = t - Math.round(yTemps[i]);
+        if (diff > 0) cmpHtml = `<span class="up">↑${diff}°</span>`;
+        else if (diff < 0) cmpHtml = `<span class="down">↓${Math.abs(diff)}°</span>`;
+        else cmpHtml = '같음';
+      }
+
+      graphHtml += `<div class="hg-col${isNow ? ' now' : ''}">
+        <div class="hg-hour">${hourLabel}</div>
+        <div class="hg-icon">${icon}</div>
+        <div class="hg-temp">${t}°</div>
+        <div class="hg-compare">${cmpHtml}</div>
+        <div class="hg-pop-row">${pcps[i] > 0 ? '<span class="pop-icon">🌧️</span>' + pcps[i] + 'mm' : pop > 0 ? '<span class="pop-icon">☂️</span>' + pop + '%' : ''}</div>
+      </div>`;
+    });
+    graphHtml += '</div>';
+    graphEl.innerHTML = graphHtml;
+
+    // 오늘 시간별 데이터 저장 (내일 비교용)
+    try {
+      const hist = JSON.parse(localStorage.getItem(Y_HOURLY_KEY) || '{}');
+      hist[todayStr] = temps;
+      // 3일 이상 된 데이터 정리
+      const keys = Object.keys(hist).sort();
+      while (keys.length > 3) { delete hist[keys.shift()]; }
+      localStorage.setItem(Y_HOURLY_KEY, JSON.stringify(hist));
+    } catch(e) {}
+
+    // ── 옷차림 표 하이라이트 ──
+    document.querySelectorAll('#outfitTable tbody tr').forEach(row => {
+      row.classList.remove('active');
+      const min = parseInt(row.dataset.min);
+      const max = parseInt(row.dataset.max);
+      if (curTemp >= min && curTemp <= max) row.classList.add('active');
+    });
+
+    // ── 렌더링 ──
+    hero.innerHTML = `
+      <div class="hero-top">
+        <div class="hero-date">${dateStr}</div>
+        <div class="hero-clock" id="heroClock">${(() => { let h=now.getHours(),ap=h>=12?'PM':'AM'; h=h%12||12; return ap+' '+h+':'+String(now.getMinutes()).padStart(2,'0'); })()}</div>
+      </div>
+
+      <div class="hero-temp-row">
+        <div class="hero-big-temp">${curTemp}°</div>
+        <div class="hero-temp-info">
+          <div class="weather-label">${dayLabel}</div>
+          <div class="minmax">↓${tMin}° ↑${tMax}°</div>
+        </div>
+      </div>
+      ${compareStr ? `<div class="hero-compare">${compareStr}</div>` : '<div style="margin-bottom:24px"></div>'}
+
+      ${alerts ? '<div class="alert-group" style="margin-bottom:14px">' + alerts + '</div>' : ''}
+
+      <div class="hero-cards">
+        <div class="glass">
+          <div class="card-label">오늘 옷 추천</div>
+          <div class="card-value">${outfitStr}</div>
+        </div>
+        <div class="glass">
+          <div class="card-label">아이템</div>
+          <div class="card-value">${itemStr}</div>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="glass hero-stat">
+          <div class="hs-icon">💨</div>
+          <div class="hs-value">${maxWind}m/s</div>
+          <div class="hs-label">최대 풍속</div>
+        </div>
+        <div class="glass hero-stat">
+          <div class="hs-icon">💧</div>
+          <div class="hs-value">${avgHumid}%</div>
+          <div class="hs-label">습도</div>
+        </div>
+        <div class="glass hero-stat">
+          <div class="hs-icon">🌧️</div>
+          <div class="hs-value">${maxPop}%</div>
+          <div class="hs-label">강수확률</div>
+        </div>
+        <div class="glass hero-stat">
+          <div class="hs-icon">${dustEmoji}</div>
+          <div class="hs-value">${dust.level}</div>
+          <div class="hs-label">미세먼지</div>
+        </div>
+      </div>
+
+      <div class="hero-updated">🔄 ${timeStr} 업데이트 · ${dataSource} (발표: ${baseDate.slice(4,6)}/${baseDate.slice(6)} ${baseTime.slice(0,2)}:${baseTime.slice(2)})</div>
+    `;
+
+  } catch (err) {
+    hero.innerHTML = `
+      <div class="today-loading">⚠️ 날씨 데이터를 불러올 수 없습니다.<br>
+      <span style="font-size:12px;opacity:0.7">${err.message}</span><br>
+      <button onclick="fetchWeather()" style="margin-top:10px;padding:8px 16px;border-radius:8px;border:none;background:rgba(255,255,255,0.2);color:#fff;cursor:pointer">다시 시도</button></div>
+    `;
+  }
+}
+
+// ══════════════════════════════════════
+// ── 체감 기록 (localStorage) ──
+// ══════════════════════════════════════
+const STORAGE_KEY = 'clothing_records';
+
+// 초기 시드 데이터 (4/1 기록)
+const SEED = [{
+  date: '2026-02-15',
+  top: '반팔티 + 얇은 셔츠',
+  outer: '패딩',
+  bottom: '긴바지',
+  dayFeel: '딱 적당',
+  nightFeel: '',
+  memo: '비니 착용. 새벽 약간의 비',
+  tempMin: 1, tempMax: 15, weather: '비'
+},{
+  date: '2026-03-31',
+  top: '반팔 + 난방',
+  outer: '두꺼운 가디건',
+  bottom: '긴바지',
+  dayFeel: '더움',
+  nightFeel: '',
+  memo: '매우 더웠음! 가디건 과했음',
+  tempMin: 11, tempMax: 19, weather: ''
+},{
+  date: '2026-04-01',
+  top: '얇은 긴팔티',
+  outer: '긴팔 후드',
+  bottom: '추리닝 긴바지',
+  dayFeel: '딱 적당',
+  nightFeel: '살짝 추움',
+  memo: '밤엔 겉옷 하나 더 있으면 완벽했을 듯',
+  tempMin: 11, tempMax: 19, weather: '흐림'
+}];
+
+function getRecords() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) { localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED)); return SEED; }
+  return JSON.parse(raw);
+}
+function setRecords(records) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+// 체감 → 뱃지
+function feelBadge(feel) {
+  const map = {
+    '더움':     ['hot','🥵 더움'],
+    '약간 더움': ['hot','😅 약간 더움'],
+    '딱 적당':   ['good','👍 딱 적당'],
+    '살짝 추움': ['chilly','🌬️ 살짝 추움'],
+    '추움':     ['cold','🥶 추움'],
+    '외출 안 함': ['','🏠 외출 안 함'],
+  };
+  const [cls, txt] = map[feel] || ['', feel];
+  return cls ? `<span class="verdict ${cls}">${txt}</span>` : `<span style="font-size:12px;color:#9ca3af">${txt}</span>`;
+}
+
+// 기온 → 뱃지 클래스
+function tempBadgeClass(t) {
+  if (t >= 28) return 'temp-hot';
+  if (t >= 23) return 'temp-warm';
+  if (t >= 17) return 'temp-mild';
+  if (t >= 12) return 'temp-cool';
+  if (t >= 9) return 'temp-chilly';
+  if (t >= 5) return 'temp-cold';
+  if (t >= 0) return 'temp-vcold';
+  return 'temp-freezing';
+}
+
+function tempColor(t) {
+  if (t >= 28) return '#e53e3e';
+  if (t >= 23) return '#ed8936';
+  if (t >= 20) return '#b7950b';
+  if (t >= 17) return '#6b9e3a';
+  if (t >= 12) return '#2f855a';
+  if (t >= 10) return '#2c7a7b';
+  if (t >= 6) return '#0097a7';
+  if (t >= 0) return '#2b6cb0';
+  if (t >= -7) return '#5b6abf';
+  return '#5b4abf';
+}
+
+// 테이블 렌더링
+function renderRecords() {
+  const records = getRecords();
+  const tbody = document.getElementById('recordBody');
+
+  if (!records.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="record-empty">아직 기록이 없어요. 오늘의 옷차림을 기록해보세요!</td></tr>';
+    return;
+  }
+
+  // 최신순 정렬
+  records.sort((a, b) => b.date.localeCompare(a.date));
+
+  const dayNames = ['일','월','화','수','목','금','토'];
+
+  tbody.innerHTML = records.map((r, i) => {
+    const d = new Date(r.date + 'T00:00:00');
+    const dayName = dayNames[d.getDay()];
+    const dateLabel = `${d.getMonth()+1}/${d.getDate()} (${dayName})`;
+
+    const tempHtml = (r.tempMin != null && r.tempMax != null)
+      ? `<span style="color:#4299e1;font-weight:700">${r.tempMin}°</span> / <span style="color:#ed8936;font-weight:700">${r.tempMax}°</span>`
+      : '<span style="color:#9ca3af">—</span>';
+
+    const clothTags = [
+      r.top ? `<span class="tag top">${r.top}</span>` : '',
+      r.outer ? `<span class="tag outer">${r.outer}</span>` : '',
+      r.bottom ? `<span class="tag bottom">${r.bottom}</span>` : '',
+    ].filter(Boolean).join('');
+
+    return `<tr>
+      <td><strong>${dateLabel}</strong></td>
+      <td>${tempHtml}</td>
+      <td>${r.weather || '—'}</td>
+      <td><div class="clothes">${clothTags}</div></td>
+      <td>${r.dayFeel ? feelBadge(r.dayFeel) : '—'}</td>
+      <td>${r.nightFeel ? feelBadge(r.nightFeel) : '—'}</td>
+      <td class="memo">${r.memo || ''}</td>
+      <td><div class="row-actions"><button class="row-btn" onclick="editRecord(${i})" title="수정"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button><button class="row-btn" onclick="deleteRecord(${i})" title="삭제"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div></td>
+    </tr>`;
+  }).join('');
+}
+
+// 저장
+async function saveRecord() {
+  const dateVal = document.getElementById('recDate').value;
+  if (!dateVal) { alert('날짜를 선택해주세요'); return; }
+
+  const records = getRecords();
+
+  // 같은 날짜 이미 있으면 덮어쓸지 확인
+  const existIdx = records.findIndex(r => r.date === dateVal);
+  if (existIdx >= 0) {
+    if (!confirm('이 날짜에 이미 기록이 있어요. 덮어쓸까요?')) return;
+    records.splice(existIdx, 1);
+  }
+
+  // 해당 날짜 기온 자동 조회
+  let tempMin = null, tempMax = null, weatherLabel = '';
+  const d = dateVal.replace(/-/g, '');
+  const today = new Date();
+  const todayStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+  const isPast = d < todayStr;
+
+  if (isPast) {
+    // 과거 → ASOS 관측 데이터
+    try {
+      const asosUrl = `https://apis.data.go.kr/1360000/AsosHourlyInfoService/getWthrDataList?serviceKey=${KMA_KEY}&numOfRows=24&pageNo=1&dataType=JSON&dataCd=ASOS&dateCd=HR&startDt=${d}&startHh=00&endDt=${d}&endHh=23&stnIds=${ASOS_STN}`;
+      const res = await fetch(asosUrl);
+      if (res.ok) {
+        const data = await res.json();
+        const asosItems = data.response.body.items.item;
+        if (asosItems && asosItems.length) {
+          const asosTemps = asosItems.map(it => parseFloat(it.ta)).filter(t => !isNaN(t));
+          if (asosTemps.length) {
+            tempMin = Math.round(Math.min(...asosTemps));
+            tempMax = Math.round(Math.max(...asosTemps));
+          }
+          // 강수량으로 날씨 판단
+          const totalRn = asosItems.reduce((s, it) => s + (parseFloat(it.rn) || 0), 0);
+          const avgCloud = asosItems.reduce((s, it) => s + (parseFloat(it.dc10Tca) || 0), 0) / asosItems.length;
+          if (totalRn > 0) weatherLabel = '비';
+          else if (avgCloud >= 8) weatherLabel = '흐림';
+          else if (avgCloud >= 5) weatherLabel = '구름많음';
+          else weatherLabel = '맑음';
+        }
+      }
+    } catch(e) {}
+  }
+
+  if (tempMin === null) {
+    // 오늘/미래 → 단기예보, 또는 ASOS 실패 시 백업
+    try {
+      const recUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${KMA_KEY}&numOfRows=1000&pageNo=1&dataType=JSON&base_date=${d}&base_time=0200&nx=${NX}&ny=${NY}`;
+      const res = await fetch(recUrl);
+      if (res.ok) {
+        const data = await res.json();
+        const recItems = data.response.body.items.item;
+        if (recItems) {
+          const dayTemps = [];
+          for (const it of recItems) {
+            if (it.fcstDate !== d) continue;
+            if (it.category === 'TMN') tempMin = Number(it.fcstValue);
+            if (it.category === 'TMX') tempMax = Number(it.fcstValue);
+            if (it.category === 'TMP') dayTemps.push(Number(it.fcstValue));
+          }
+          if (tempMin === null && dayTemps.length) tempMin = Math.min(...dayTemps);
+          if (tempMax === null && dayTemps.length) tempMax = Math.max(...dayTemps);
+          if (!weatherLabel) {
+            const skItem = recItems.find(it => it.fcstDate === d && it.category === 'SKY' && it.fcstTime === '1200');
+            const ptItem = recItems.find(it => it.fcstDate === d && it.category === 'PTY' && it.fcstTime === '1200');
+            const [wl] = kmaWeatherInfo(skItem ? Number(skItem.fcstValue) : 1, ptItem ? Number(ptItem.fcstValue) : 0);
+            weatherLabel = wl;
+          }
+        }
+      }
+    } catch(e) {}
+  }
+
+  const record = {
+    date: dateVal,
+    top: document.getElementById('recTop').value.trim(),
+    outer: document.getElementById('recOuter').value.trim(),
+    bottom: document.getElementById('recBottom').value.trim(),
+    dayFeel: document.getElementById('recDay').value,
+    nightFeel: document.getElementById('recNight').value,
+    memo: document.getElementById('recMemo').value.trim(),
+    tempMin, tempMax, weather: weatherLabel
+  };
+
+  records.push(record);
+  setRecords(records);
+  renderRecords();
+
+  // 폼 초기화
+  document.getElementById('recTop').value = '';
+  document.getElementById('recOuter').value = '';
+  document.getElementById('recBottom').value = '';
+  document.getElementById('recDay').value = '';
+  document.getElementById('recNight').value = '';
+  document.getElementById('recMemo').value = '';
+
+  // 오늘 날짜로 리셋
+  setDefaultDate();
+}
+
+// 수정
+function editRecord(sortedIdx) {
+  const records = getRecords();
+  records.sort((a, b) => b.date.localeCompare(a.date));
+  const r = records[sortedIdx];
+
+  document.getElementById('recDate').value = r.date;
+  document.getElementById('recTop').value = r.top || '';
+  document.getElementById('recOuter').value = r.outer || '';
+  document.getElementById('recBottom').value = r.bottom || '';
+  document.getElementById('recDay').value = r.dayFeel || '';
+  document.getElementById('recNight').value = r.nightFeel || '';
+  document.getElementById('recMemo').value = r.memo || '';
+
+  // 폼으로 스크롤
+  document.querySelector('.record-form').scrollIntoView({ behavior:'smooth' });
+}
+
+// 삭제
+function deleteRecord(sortedIdx) {
+  if (!confirm('이 기록을 삭제할까요?')) return;
+  const records = getRecords();
+  records.sort((a, b) => b.date.localeCompare(a.date));
+  records.splice(sortedIdx, 1);
+  setRecords(records);
+  renderRecords();
+}
+
+// 날짜 기본값
+function setDefaultDate() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  document.getElementById('recDate').value = `${yyyy}-${mm}-${dd}`;
+}
+
+// ── 실시간 시계 (AM/PM) ──
+function fmtAmPm(d) {
+  let h = d.getHours(), m = d.getMinutes();
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${ap} ${h}:${String(m).padStart(2,'0')}`;
+}
+setInterval(() => {
+  const el = document.getElementById('heroClock');
+  if (el) el.textContent = fmtAmPm(new Date());
+}, 10000);
+
+// ── PWA 서비스 워커 등록 ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// ── 페이지 로드 ──
+window.scrollTo(0, 0);
+setDefaultDate();
+renderRecords();
+fetchWeather();
+
+// ── 30분마다 자동 갱신 ──
+setInterval(fetchWeather, 30 * 60 * 1000);
+</script>
+</body>
+</html>
