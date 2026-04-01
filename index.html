@@ -978,11 +978,9 @@
       <thead>
         <tr>
           <th>날짜</th>
-          <th>기온</th>
           <th>날씨</th>
           <th>옷차림</th>
-          <th>낮</th>
-          <th>밤</th>
+          <th>체감</th>
           <th>메모</th>
           <th></th>
         </tr>
@@ -1610,15 +1608,22 @@ function setRecords(records) {
 // 체감 → 뱃지
 function feelBadge(feel) {
   const map = {
-    '더움':     ['hot','🥵 더움'],
-    '약간 더움': ['hot','😅 약간 더움'],
-    '딱 적당':   ['good','👍 딱 적당'],
-    '살짝 추움': ['chilly','🌬️ 살짝 추움'],
-    '추움':     ['cold','🥶 추움'],
-    '외출 안 함': ['','🏠 외출 안 함'],
+    '더움':     ['hot','🥵'],
+    '약간 더움': ['hot','😅'],
+    '딱 적당':   ['good','👍'],
+    '살짝 추움': ['chilly','🌬️'],
+    '추움':     ['cold','🥶'],
+    '외출 안 함': ['','🏠'],
   };
-  const [cls, txt] = map[feel] || ['', feel];
-  return cls ? `<span class="verdict ${cls}">${txt}</span>` : `<span style="font-size:12px;color:#9ca3af">${txt}</span>`;
+  // "낮 딱 적당" → prefix="낮", key="딱 적당"
+  let prefix = '', key = feel;
+  if (feel.startsWith('낮 ') || feel.startsWith('밤 ')) {
+    prefix = feel.slice(0, 2);
+    key = feel.slice(2);
+  }
+  const [cls, emoji] = map[key] || ['', ''];
+  const label = `${prefix}${emoji} ${key}`;
+  return cls ? `<span class="verdict ${cls}">${label}</span>` : `<span style="font-size:12px;color:#9ca3af">${label}</span>`;
 }
 
 // 기온 → 뱃지 클래스
@@ -1652,7 +1657,7 @@ function renderRecords() {
   const tbody = document.getElementById('recordBody');
 
   if (!records.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="record-empty">아직 기록이 없어요. 오늘의 옷차림을 기록해보세요!</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="record-empty">아직 기록이 없어요. 오늘의 옷차림을 기록해보세요!</td></tr>';
     return;
   }
 
@@ -1676,13 +1681,20 @@ function renderRecords() {
       r.bottom ? `<span class="tag bottom">${r.bottom}</span>` : '',
     ].filter(Boolean).join('');
 
+    // 기온+날씨 합치기
+    const weatherHtml = `${tempHtml}${r.weather ? ' · ' + r.weather : ''}`;
+
+    // 낮+밤 체감 합치기
+    const feels = [];
+    if (r.dayFeel) feels.push('낮 ' + r.dayFeel);
+    if (r.nightFeel) feels.push('밤 ' + r.nightFeel);
+    const feelHtml = feels.length ? feels.map(f => feelBadge(f)).join(' ') : '—';
+
     return `<tr>
       <td><strong>${dateLabel}</strong></td>
-      <td>${tempHtml}</td>
-      <td>${r.weather || '—'}</td>
+      <td>${weatherHtml}</td>
       <td><div class="clothes">${clothTags}</div></td>
-      <td>${r.dayFeel ? feelBadge(r.dayFeel) : '—'}</td>
-      <td>${r.nightFeel ? feelBadge(r.nightFeel) : '—'}</td>
+      <td>${feelHtml}</td>
       <td class="memo">${r.memo || ''}</td>
       <td><div class="row-actions"><button class="row-btn" onclick="editRecord(${i})" title="수정"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button><button class="row-btn" onclick="deleteRecord(${i})" title="삭제"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button></div></td>
     </tr>`;
