@@ -1277,14 +1277,15 @@ async function fetchWeather() {
     } catch(e) {}
 
     // 일출/일몰
-    let sunriseH = 6, sunriseM = 0, sunsetH = 18, sunsetM = 30;
+    let sunriseH = 6, sunriseM = 0, sunsetH = 18, sunsetM = 30, uvMax = 0;
     try {
-      const sunRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.6027&longitude=126.9291&daily=sunrise,sunset&timezone=Asia/Seoul&forecast_days=1`);
+      const sunRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.6027&longitude=126.9291&daily=sunrise,sunset,uv_index_max&timezone=Asia/Seoul&forecast_days=1`);
       const sunData = await sunRes.json();
-      const sr = sunData.daily.sunrise[0]; // "2026-04-02T06:16"
+      const sr = sunData.daily.sunrise[0];
       const ss = sunData.daily.sunset[0];
       sunriseH = parseInt(sr.slice(11,13)); sunriseM = parseInt(sr.slice(14,16));
       sunsetH = parseInt(ss.slice(11,13)); sunsetM = parseInt(ss.slice(14,16));
+      uvMax = Math.round(sunData.daily.uv_index_max[0] || 0);
     } catch(e) {}
 
     // 날짜/시간
@@ -1326,6 +1327,7 @@ async function fetchWeather() {
     const itemList = [];
     if (hasRain || hasSnow || maxPop >= 30) itemList.push('우산');
     if (dust.grade >= 2) itemList.push('KF94 마스크', '안경');
+    if (uvMax >= 6) itemList.push('선글라스');
     if (mainClothes.acc) itemList.push(mainClothes.acc);
     const itemStr = itemList.length ? itemList.join(', ') : '없음';
 
