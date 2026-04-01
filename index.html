@@ -571,6 +571,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: nowrap;
       margin-bottom: 20px;
     }
     .today-hero .hero-date {
@@ -658,7 +659,9 @@
 
       /* 히어로 */
       .today-hero { padding: 24px 16px; border-radius: 16px; }
-      .hero-top { margin-bottom: 60px; }
+      .hero-top { margin-bottom: 60px; align-items: center; }
+      .today-hero .hero-date,
+      .hero-clock { font-size: 13px; }
       .hero-big-temp { font-size: 52px; }
       .hero-temp-info .weather-label { font-size: 16px; }
       .hero-temp-info .minmax { font-size: 14px; }
