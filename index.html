@@ -748,14 +748,14 @@
         <tr data-min="20" data-max="22">
           <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#ecc94b"></span><div><span class="temp-bar-label" style="color:#b7950b">20~22°</span><div class="temp-feel">😊 쾌적</div></div></div></td>
           <td><div class="clothes"><span class="tag outer">없음</span></div></td>
-          <td><div class="clothes"><span class="tag top">맨투맨</span></div></td>
+          <td><div class="clothes"><span class="tag top">긴팔티</span></div></td>
           <td><div class="clothes"><span class="tag bottom">반바지</span></div></td>
           <td><div class="clothes"><span class="tag acc">운동화</span></div></td>
         </tr>
         <tr data-min="17" data-max="19">
           <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#a3d977"></span><div><span class="temp-bar-label" style="color:#6b9e3a">17~19°</span><div class="temp-feel">🙂 선선</div></div></div></td>
           <td><div class="clothes"><span class="tag outer">가디건</span></div></td>
-          <td><div class="clothes"><span class="tag top">얇은 긴팔티</span></div></td>
+          <td><div class="clothes"><span class="tag top">긴팔티</span></div></td>
           <td><div class="clothes"><span class="tag bottom">긴바지</span></div></td>
           <td><div class="clothes"><span class="tag acc">—</span></div></td>
         </tr>
@@ -1025,9 +1025,9 @@ const AIR_STATION = '중구'; // 미세먼지 측정소명
 function clothesFor(temp) {
   if (temp >= 28) return { outer:'', top:'반팔티', bottom:'반바지', acc:'샌들' };
   if (temp >= 23) return { outer:'', top:'반팔티', bottom:'반바지', acc:'' };
-  if (temp >= 20) return { outer:'', top:'맨투맨', bottom:'반바지', acc:'' };
-  if (temp >= 17) return { outer:'가디건', top:'얇은 긴팔티', bottom:'긴바지', acc:'' };
-  if (temp >= 12) return { outer:'얇은 자켓', top:'긴팔티', bottom:'긴바지', acc:'' };
+  if (temp >= 20) return { outer:'', top:'긴팔티', bottom:'반바지', acc:'' };
+  if (temp >= 17) return { outer:'가디건', top:'긴팔티', bottom:'긴바지', acc:'' };
+  if (temp >= 12) return { outer:'얇은 자켓', top:'맨투맨', bottom:'긴바지', acc:'' };
   if (temp >= 10) return { outer:'자켓', top:'맨투맨', bottom:'긴바지', acc:'' };
   if (temp >= 6)  return { outer:'코트/두툼자켓', top:'니트', bottom:'긴바지', acc:'' };
   if (temp >= 0)  return { outer:'숏패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'' };
