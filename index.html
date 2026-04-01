@@ -1022,19 +1022,98 @@ const AIR_STATION = '중구'; // 미세먼지 측정소명
 // 4/1: 19°C 낮 → 긴팔+후드 = 딱 적당
 // 4/1: 11°C 밤 → 긴팔+후드 = 살짝 추움 (자켓 추가하면 OK)
 // 4/2: ~5°C 밤 → 긴팔+후드+얇은자켓 = 충분
+// ── 기온 구간 정의 ──
+const TEMP_RANGES = [
+  {min:28,max:99}, {min:23,max:27}, {min:20,max:22}, {min:17,max:19},
+  {min:12,max:16}, {min:10,max:11}, {min:6,max:9}, {min:0,max:5},
+  {min:-7,max:-1}, {min:-12,max:-8}, {min:-99,max:-13}
+];
+
+const DEFAULT_OUTFITS = {
+  '28_99':   { outer:'', top:'반팔티', bottom:'반바지', acc:'샌들' },
+  '23_27':   { outer:'', top:'반팔티', bottom:'반바지', acc:'' },
+  '20_22':   { outer:'', top:'긴팔티', bottom:'반바지', acc:'' },
+  '17_19':   { outer:'가디건', top:'긴팔티', bottom:'긴바지', acc:'' },
+  '12_16':   { outer:'얇은 자켓', top:'맨투맨', bottom:'긴바지', acc:'' },
+  '10_11':   { outer:'자켓', top:'맨투맨', bottom:'긴바지', acc:'' },
+  '6_9':     { outer:'코트/두툼자켓', top:'니트', bottom:'긴바지', acc:'' },
+  '0_5':     { outer:'숏패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'' },
+  '-7_-1':   { outer:'롱패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'' },
+  '-12_-8':  { outer:'롱패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'목도리' },
+  '-99_-13': { outer:'롱패딩', top:'터틀넥+히트텍', bottom:'기모 긴바지', acc:'목도리·장갑' },
+};
+
+// ── "딱 적당" 기록에서 맞춤 데이터 추출 ──
+function getPersonalOutfits() {
+  const records = getRecords();
+  const personal = {};
+
+  for (const r of records) {
+    const isPerfect = r.dayFeel === '딱 적당' || r.nightFeel === '딱 적당';
+    if (!isPerfect || r.tempMin == null || r.tempMax == null) continue;
+
+    // 낮 "딱 적당" → 최고기온 기준, 밤 "딱 적당" → 최저기온 기준
+    const targets = [];
+    if (r.dayFeel === '딱 적당') targets.push(r.tempMax);
+    if (r.nightFeel === '딱 적당') targets.push(r.tempMin);
+
+    for (const t of targets) {
+      for (const range of TEMP_RANGES) {
+        if (t >= range.min && t <= range.max) {
+          const key = `${range.min}_${range.max}`;
+          if (!personal[key] || r.date > personal[key].date) {
+            personal[key] = {
+              date: r.date,
+              outer: r.outer || '',
+              top: r.top || '',
+              bottom: r.bottom || '',
+            };
+          }
+          break;
+        }
+      }
+    }
+  }
+  return personal;
+}
+
+// ── 옷 추천 (맞춤 → 기본값 순서) ──
 function clothesFor(temp) {
-  if (temp >= 28) return { outer:'', top:'반팔티', bottom:'반바지', acc:'샌들' };
-  if (temp >= 23) return { outer:'', top:'반팔티', bottom:'반바지', acc:'' };
-  if (temp >= 20) return { outer:'', top:'긴팔티', bottom:'반바지', acc:'' };
-  if (temp >= 17) return { outer:'가디건', top:'긴팔티', bottom:'긴바지', acc:'' };
-  if (temp >= 12) return { outer:'얇은 자켓', top:'맨투맨', bottom:'긴바지', acc:'' };
-  if (temp >= 10) return { outer:'자켓', top:'맨투맨', bottom:'긴바지', acc:'' };
-  if (temp >= 6)  return { outer:'코트/두툼자켓', top:'니트', bottom:'긴바지', acc:'' };
-  if (temp >= 0)  return { outer:'숏패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'' };
-  if (temp >= -7) return { outer:'롱패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'' };
-  if (temp >= -10) return { outer:'롱패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'목도리' };
-  if (temp >= -12) return { outer:'롱패딩', top:'터틀넥', bottom:'기모 긴바지', acc:'목도리' };
-  return { outer:'롱패딩', top:'터틀넥+히트텍', bottom:'기모 긴바지', acc:'목도리·장갑' };
+  const personal = getPersonalOutfits();
+  for (const range of TEMP_RANGES) {
+    if (temp >= range.min && temp <= range.max) {
+      const key = `${range.min}_${range.max}`;
+      if (personal[key]) {
+        return { outer: personal[key].outer, top: personal[key].top, bottom: personal[key].bottom, acc: '' };
+      }
+      return { ...DEFAULT_OUTFITS[key] };
+    }
+  }
+  return { ...DEFAULT_OUTFITS['-99_-13'] };
+}
+
+// ── 기온별 옷차림 표 업데이트 ──
+function updateOutfitTable() {
+  const personal = getPersonalOutfits();
+  const rows = document.querySelectorAll('#outfitTable tbody tr');
+  rows.forEach(row => {
+    const key = `${row.dataset.min}_${row.dataset.max}`;
+    const def = DEFAULT_OUTFITS[key];
+    const p = personal[key];
+    const data = p || def;
+    if (!data) return;
+
+    const cells = row.querySelectorAll('td');
+    // cells[0]=기온, [1]=아우터, [2]=상의, [3]=하의, [4]=소품
+    const badge = p ? ' <span style="font-size:10px;color:#6366f1;font-weight:600">맞춤</span>' : '';
+
+    cells[1].innerHTML = `<div class="clothes"><span class="tag outer">${data.outer || '없음'}</span></div>${badge}`;
+    cells[2].innerHTML = `<div class="clothes"><span class="tag top">${data.top}</span></div>`;
+    cells[3].innerHTML = `<div class="clothes"><span class="tag bottom">${data.bottom}</span></div>`;
+    if (p && def) {
+      cells[4].innerHTML = `<div class="clothes"><span class="tag acc">${def.acc || '—'}</span></div>`;
+    }
+  });
 }
 
 // ── 미세먼지 등급 (한국 기준) ──
@@ -1798,6 +1877,7 @@ async function saveRecord() {
   records.push(record);
   setRecords(records);
   renderRecords();
+  updateOutfitTable();
 
   // 폼 초기화
   document.getElementById('recTop').value = '';
@@ -1837,6 +1917,7 @@ function deleteRecord(sortedIdx) {
   records.splice(sortedIdx, 1);
   setRecords(records);
   renderRecords();
+  updateOutfitTable();
 }
 
 // 날짜 기본값
@@ -1869,6 +1950,7 @@ if ('serviceWorker' in navigator) {
 window.scrollTo(0, 0);
 setDefaultDate();
 renderRecords();
+updateOutfitTable();
 fetchWeather();
 
 // ── 30분마다 자동 갱신 ──
