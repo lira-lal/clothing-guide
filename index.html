@@ -663,7 +663,14 @@
       .hero-temp-info .minmax { font-size: 14px; }
       .hero-cards { grid-template-columns: 1fr; gap: 8px; }
       .hero-cards .card-value { font-size: 14px; }
-      .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .hero-stats { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+      .hero-stat .hs-icon { font-size: 16px; }
+      .hero-stat .hs-value { font-size: 14px; }
+      .hero-stat .hs-label { font-size: 10px; }
+      .glass.hero-stat { padding: 10px 6px; }
+      .hero-temp-row { margin-bottom: 0; }
+      .hero-compare { margin-bottom: 20px; }
+      .today-hero .hero-date { margin-bottom: 32px; }
       .hero-stat .hs-value { font-size: 18px; }
       .glass { padding: 12px 14px; border-radius: 12px; }
 
@@ -702,7 +709,7 @@
 
     @media (max-width: 400px) {
       .hero-big-temp { font-size: 44px; }
-      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+      .hero-stats { grid-template-columns: repeat(4, 1fr); }
       .form-grid { grid-template-columns: 1fr; }
       .hg-col { width: 54px; }
     }
