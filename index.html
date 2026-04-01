@@ -1086,16 +1086,26 @@ function getPersonalOutfits() {
 // ── 옷 추천 (맞춤 → 기본값 순서) ──
 function clothesFor(temp) {
   const personal = getPersonalOutfits();
+  let result = null;
   for (const range of TEMP_RANGES) {
     if (temp >= range.min && temp <= range.max) {
       const key = `${range.min}_${range.max}`;
       if (personal[key]) {
-        return { outer: personal[key].outer, top: personal[key].top, bottom: personal[key].bottom, acc: '' };
+        result = { outer: personal[key].outer, top: personal[key].top, bottom: personal[key].bottom, acc: '' };
+      } else {
+        result = { ...DEFAULT_OUTFITS[key] };
       }
-      return { ...DEFAULT_OUTFITS[key] };
+      break;
     }
   }
-  return { ...DEFAULT_OUTFITS['-99_-13'] };
+  if (!result) result = { ...DEFAULT_OUTFITS['-99_-13'] };
+
+  // 4~11월에는 패딩 추천 안 함
+  const month = new Date().getMonth() + 1;
+  if (month >= 4 && month <= 11 && result.outer && result.outer.includes('패딩')) {
+    result.outer = result.outer.replace(/숏패딩/, '두꺼운 코트').replace(/롱패딩/, '두꺼운 코트').replace(/두꺼운 패딩/, '두꺼운 코트');
+  }
+  return result;
 }
 
 // ── 기온별 옷차림 표 업데이트 ──
@@ -1111,9 +1121,7 @@ function updateOutfitTable() {
 
     const cells = row.querySelectorAll('td');
     // cells[0]=기온, [1]=아우터, [2]=상의, [3]=하의, [4]=소품
-    const badge = p ? ' <span style="font-size:10px;color:#6366f1;font-weight:600">맞춤</span>' : '';
-
-    cells[1].innerHTML = `<div class="clothes"><span class="tag outer">${data.outer || '없음'}</span></div>${badge}`;
+    cells[1].innerHTML = `<div class="clothes"><span class="tag outer">${data.outer || '없음'}</span></div>`;
     cells[2].innerHTML = `<div class="clothes"><span class="tag top">${data.top}</span></div>`;
     cells[3].innerHTML = `<div class="clothes"><span class="tag bottom">${data.bottom}</span></div>`;
     if (p && def) {
@@ -1405,7 +1413,7 @@ async function fetchWeather() {
 
     // ── 옷 추천 ──
     const mainClothes = clothesFor(Math.round((tMax + tMin) / 2));
-    const outfitParts = [mainClothes.top, mainClothes.outer, mainClothes.bottom].filter(Boolean);
+    const outfitParts = [mainClothes.outer, mainClothes.top, mainClothes.bottom].filter(Boolean);
     const outfitStr = outfitParts.join(' + ');
 
     // 아이템 (우산, 마스크 등)
