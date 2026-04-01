@@ -1102,8 +1102,11 @@ function clothesFor(temp) {
 
   // 4~11월에는 패딩 추천 안 함
   const month = new Date().getMonth() + 1;
-  if (month >= 4 && month <= 11 && result.outer && result.outer.includes('패딩')) {
-    result.outer = result.outer.replace(/숏패딩/, '두꺼운 코트').replace(/롱패딩/, '두꺼운 코트').replace(/두꺼운 패딩/, '두꺼운 코트');
+  if (month >= 4 && month <= 11 && result.outer) {
+    result.outer = result.outer.replace(/숏패딩/g, '두꺼운 코트').replace(/롱패딩/g, '두꺼운 코트').replace(/두꺼운 패딩/g, '두꺼운 코트').replace(/패딩/g, '두꺼운 코트');
+  }
+  if (month >= 4 && month <= 11 && result.top) {
+    result.top = result.top.replace(/패딩/g, '두꺼운 코트');
   }
   return result;
 }
