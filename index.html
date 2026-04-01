@@ -1684,7 +1684,7 @@ function renderRecords() {
     ].filter(Boolean).join('');
 
     // 기온+날씨 합치기
-    const weatherHtml = `${tempHtml}${r.weather ? ' · ' + r.weather : ''}`;
+    const weatherHtml = `${tempHtml}${r.weather ? ' ' + r.weather : ''}`;
 
     // 낮+밤 체감 합치기
     const feels = [];
