@@ -411,6 +411,7 @@
       border-radius: 12px;
       font-size: 12px;
       font-weight: 600;
+      margin: 2px;
     }
     .verdict.good { background: #d1fae5; color: #047857; }
     .verdict.chilly { background: #dbeafe; color: #2563eb; }
@@ -1672,7 +1673,7 @@ function renderRecords() {
     const dateLabel = `${d.getMonth()+1}/${d.getDate()} (${dayName})`;
 
     const tempHtml = (r.tempMin != null && r.tempMax != null)
-      ? `<span style="color:#4299e1;font-weight:700">${r.tempMin}°</span> / <span style="color:#ed8936;font-weight:700">${r.tempMax}°</span>`
+      ? `<span style="color:#4299e1;font-weight:700">${r.tempMin}°</span> <span style="color:#ed8936;font-weight:700">${r.tempMax}°</span>`
       : '<span style="color:#9ca3af">—</span>';
 
     const clothTags = [
