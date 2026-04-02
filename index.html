@@ -1679,39 +1679,87 @@ async function fetchWeather() {
     // 미세먼지 표시 텍스트
     const dustEmoji = dust.grade >= 2 ? '😷' : dust.grade >= 1 ? '😐' : '😊';
 
-    // ── 배경색 (시간 + 날씨) ──
-    const h = now.getHours();
+    // ── 배경색 (일출/일몰 + 날씨) ──
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const srMin = sunriseH * 60 + sunriseM;
+    const ssMin = sunsetH * 60 + sunsetM;
+
+    // 현재 시간 PTY/SKY
+    const curPty = ptys[curHour] || 0;
+    const curSky = skys[curHour] || 1;
+
+    function mkGrad(c1, c2, c3) {
+      return `linear-gradient(135deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)`;
+    }
+
     let bg, shadow;
-    if (hasRain) {
-      // 비
-      bg = 'linear-gradient(135deg, #4a5568 0%, #5a6b7f 50%, #6b7d94 100%)';
-      shadow = '0 8px 32px rgba(74,85,104,0.35)';
-    } else if (hasSnow) {
-      // 눈
-      bg = 'linear-gradient(135deg, #a0aec0 0%, #b8c6d9 50%, #cfd8e3 100%)';
-      shadow = '0 8px 32px rgba(160,174,192,0.35)';
-    } else if (h >= 6 && h < 9) {
-      // 아침
-      bg = 'linear-gradient(135deg, #f6ad55 0%, #ed8936 50%, #dd6b20 100%)';
-      shadow = '0 8px 32px rgba(237,137,54,0.35)';
-    } else if (h >= 9 && h < 17) {
-      if (modeSky >= 4) {
-        // 낮 흐림
-        bg = 'linear-gradient(135deg, #718096 0%, #8e9aaf 50%, #a0aec0 100%)';
+
+    // 1. 미세먼지 매우나쁨
+    if (dust.grade >= 3) {
+      bg = mkGrad('#8B8883','#9D968B','#5C5750');
+      shadow = '0 8px 32px rgba(92,87,80,0.35)';
+    }
+    // 2. 일출 (앞뒤 20분)
+    else if (nowMin >= srMin - 20 && nowMin <= srMin + 20) {
+      bg = mkGrad('#4E73A4','#8B99BA','#B08E9A');
+      shadow = '0 8px 32px rgba(78,115,164,0.35)';
+    }
+    // 3. 일몰 (앞뒤 20분)
+    else if (nowMin >= ssMin - 20 && nowMin <= ssMin + 20) {
+      bg = mkGrad('#1E3760','#585C83','#9E8381');
+      shadow = '0 8px 32px rgba(30,55,96,0.35)';
+    }
+    // 4. 낮 (일출+20분 ~ 일몰-20분)
+    else if (nowMin > srMin + 20 && nowMin < ssMin - 20) {
+      if (curPty === 1 || curPty === 4) {
+        // 비/소나기
+        bg = mkGrad('#4a5568','#5a6b7f','#6b7d94');
+        shadow = '0 8px 32px rgba(74,85,104,0.35)';
+      } else if (curPty === 3) {
+        // 눈
+        bg = mkGrad('#7890A6','#A9BEDB','#CFD8E3');
+        shadow = '0 8px 32px rgba(120,144,166,0.35)';
+      } else if (curPty === 2) {
+        // 이슬비
+        bg = mkGrad('#4a5568','#5a6b7f','#6b7d94');
+        shadow = '0 8px 32px rgba(74,85,104,0.35)';
+      } else if (curSky >= 4) {
+        // 흐림
+        bg = mkGrad('#718096','#8e9aaf','#a0aec0');
         shadow = '0 8px 32px rgba(113,128,150,0.3)';
+      } else if (curSky === 3) {
+        // 구름 조금
+        bg = mkGrad('#4299e1','#5b9ef5','#63b3ed');
+        shadow = '0 8px 32px rgba(66,153,225,0.35)';
       } else {
-        // 낮 맑음
-        bg = 'linear-gradient(135deg, #4299e1 0%, #5b9ef5 50%, #63b3ed 100%)';
+        // 맑음
+        bg = mkGrad('#4299e1','#5b9ef5','#63b3ed');
         shadow = '0 8px 32px rgba(66,153,225,0.35)';
       }
-    } else if (h >= 17 && h < 20) {
-      // 저녁
-      bg = 'linear-gradient(135deg, #e53e3e 0%, #c05621 50%, #9b2c2c 100%)';
-      shadow = '0 8px 32px rgba(229,62,62,0.3)';
-    } else {
-      // 밤
-      bg = 'linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #1e2a3a 100%)';
-      shadow = '0 8px 32px rgba(26,32,44,0.5)';
+    }
+    // 5. 밤 (일몰+20분 ~ 일출-20분)
+    else {
+      if (curPty === 1 || curPty === 4) {
+        // 비/소나기
+        bg = mkGrad('#595E68','#333A47','#1E2A39');
+        shadow = '0 8px 32px rgba(30,42,57,0.5)';
+      } else if (curPty === 3) {
+        // 눈
+        bg = mkGrad('#1D2437','#242A3E','#29344E');
+        shadow = '0 8px 32px rgba(29,36,55,0.5)';
+      } else if (curSky >= 4) {
+        // 흐림
+        bg = mkGrad('#44474D','#3B3E44','#36404D');
+        shadow = '0 8px 32px rgba(54,64,77,0.5)';
+      } else if (curSky === 3) {
+        // 구름 조금
+        bg = mkGrad('#1a202c','#2d3748','#1e2a3a');
+        shadow = '0 8px 32px rgba(26,32,44,0.5)';
+      } else {
+        // 맑음
+        bg = mkGrad('#08081C','#1F223B','#313F5E');
+        shadow = '0 8px 32px rgba(8,8,28,0.5)';
+      }
     }
     hero.style.background = bg;
     hero.style.boxShadow = shadow;
