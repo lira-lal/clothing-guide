@@ -797,7 +797,7 @@
     .ww-label {
       font-size: 11px;
       color: #9ca3af;
-      width: 16px;
+      white-space: nowrap;
     }
     .weekly-pop {
       font-size: 11px;
@@ -1967,8 +1967,8 @@ async function fetchWeather() {
             </div>
           </div>
           <div class="weekly-weather">
-            <div class="ww-row"><span class="ww-label">낮</span><span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span><span class="weekly-icon">${pmIcon}</span><span class="wk-tag night">${wkAmStr}</span></div>
-            <div class="ww-row"><span class="ww-label">밤</span><span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span><span class="weekly-icon">${amIcon}</span><span class="wk-tag day">${wkPmStr}</span></div>
+            <div class="ww-row">${isYesterday ? '<span class="ww-label">오전</span>' : '<span class="ww-label" style="visibility:hidden">오전</span>'}<span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span><span class="weekly-icon">${amIcon}</span><span class="wk-tag night">${wkAmStr}</span></div>
+            <div class="ww-row">${isYesterday ? '<span class="ww-label">오후</span>' : '<span class="ww-label" style="visibility:hidden">오후</span>'}<span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span><span class="weekly-icon">${pmIcon}</span><span class="wk-tag day">${wkPmStr}</span></div>
           </div>
         </div>`;
       }
