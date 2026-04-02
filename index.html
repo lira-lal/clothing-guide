@@ -1807,8 +1807,11 @@ async function fetchWeather() {
 
     let graphHtml = '<div class="hg-table">';
 
-    let sunriseInserted = sunriseH < startH;
-    let sunsetInserted = sunsetH < startH;
+    // 일출/일몰은 해당 시간의 다음 정시 칸 앞에 삽입
+    const srInsertH = sunriseM > 0 ? sunriseH + 1 : sunriseH;
+    const ssInsertH = sunsetM > 0 ? sunsetH + 1 : sunsetH;
+    let sunriseInserted = srInsertH <= startH;
+    let sunsetInserted = ssInsertH <= startH;
 
     displayHours.forEach((i, idx) => {
       const realH = i % 24;
@@ -1825,7 +1828,7 @@ async function fetchWeather() {
       }
 
       // 일출 삽입 (오늘 범위만)
-      if (!sunriseInserted && i < 24 && realH >= sunriseH) {
+      if (!sunriseInserted && i < 24 && realH >= srInsertH) {
         graphHtml += `<div class="hg-col hg-sun">
           <div class="hg-hour">${sunriseLabel}</div>
           <div class="hg-icon">🌅</div>
@@ -1837,7 +1840,7 @@ async function fetchWeather() {
       }
 
       // 일몰 삽입 (오늘 범위만)
-      if (!sunsetInserted && i < 24 && realH >= sunsetH) {
+      if (!sunsetInserted && i < 24 && realH >= ssInsertH) {
         graphHtml += `<div class="hg-col hg-sun">
           <div class="hg-hour">${sunsetLabel}</div>
           <div class="hg-icon">🌇</div>
