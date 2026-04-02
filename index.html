@@ -750,9 +750,9 @@
     .weekly-row {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       padding: 14px 12px;
       border-bottom: 1px solid #f0f0f0;
-      gap: 6px;
     }
     .weekly-row:last-child { border-bottom: none; }
     .weekly-row.weekly-today { background: #eef6ff; }
@@ -780,7 +780,7 @@
     .weekly-right {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
     .weekly-pop {
       font-size: 12px;
@@ -797,13 +797,12 @@
     .weekly-temps {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
     }
     .weekly-min {
       font-size: 13px;
       color: #4299e1;
       font-weight: 600;
-      width: 28px;
       text-align: right;
     }
     .weekly-sep {
@@ -814,7 +813,6 @@
       font-size: 13px;
       color: #ed8936;
       font-weight: 600;
-      width: 28px;
       text-align: right;
     }
 
@@ -826,7 +824,6 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      margin-left: auto;
       flex-shrink: 0;
       align-items: flex-end;
     }
@@ -837,8 +834,8 @@
       white-space: nowrap;
       text-align: right;
     }
-    .wk-tag.day { background: #fef3c7; color: #92400e; }
-    .wk-tag.night { background: #e0e7ff; color: #3730a3; }
+    .wk-tag.day { background: #dbeafe; color: #1e40af; }
+    .wk-tag.night { background: #fef3c7; color: #92400e; }
 
     /* ── Bottom Tab ── */
     .tab-content { display: none; }
@@ -941,21 +938,21 @@
           <td><div class="clothes"><span class="tag acc">운동화</span></div></td>
         </tr>
         <tr data-min="20" data-max="22">
-          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#ecc94b"></span><div><span class="temp-bar-label" style="color:#b7950b">20~22°</span><div class="temp-feel">😊 쾌적</div></div></div></td>
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#ecc94b"></span><div><span class="temp-bar-label" style="color:#b7950b">20~22°</span><div class="temp-feel">😊 따뜻</div></div></div></td>
           <td><div class="clothes"><span class="tag outer">없음</span></div></td>
           <td><div class="clothes"><span class="tag top">긴팔티</span></div></td>
           <td><div class="clothes"><span class="tag bottom">반바지</span></div></td>
           <td><div class="clothes"><span class="tag acc">운동화</span></div></td>
         </tr>
         <tr data-min="17" data-max="19">
-          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#a3d977"></span><div><span class="temp-bar-label" style="color:#6b9e3a">17~19°</span><div class="temp-feel">🙂 선선</div></div></div></td>
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#a3d977"></span><div><span class="temp-bar-label" style="color:#6b9e3a">17~19°</span><div class="temp-feel">🙂 쾌적</div></div></div></td>
           <td><div class="clothes"><span class="tag outer">가디건</span></div></td>
           <td><div class="clothes"><span class="tag top">긴팔티</span></div></td>
           <td><div class="clothes"><span class="tag bottom">긴바지</span></div></td>
           <td><div class="clothes"><span class="tag acc">—</span></div></td>
         </tr>
         <tr data-min="12" data-max="16">
-          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#48bb78"></span><div><span class="temp-bar-label" style="color:#2f855a">12~16°</span><div class="temp-feel">😐 약간 쌀쌀</div></div></div></td>
+          <td><div class="temp-bar-wrap"><span class="temp-bar" style="background:#48bb78"></span><div><span class="temp-bar-label" style="color:#2f855a">12~16°</span><div class="temp-feel">😐 선선</div></div></div></td>
           <td><div class="clothes"><span class="tag outer">얇은 자켓</span></div></td>
           <td><div class="clothes"><span class="tag top">맨투맨</span></div></td>
           <td><div class="clothes"><span class="tag bottom">긴바지</span></div></td>
@@ -1335,9 +1332,9 @@ function updateOutfitTable() {
 function feelLabel(t) {
   if (t >= 28) return '매우 더움';
   if (t >= 23) return '더움';
-  if (t >= 20) return '쾌적';
-  if (t >= 17) return '선선';
-  if (t >= 12) return '약간 쌀쌀';
+  if (t >= 20) return '따뜻';
+  if (t >= 17) return '쾌적';
+  if (t >= 12) return '선선';
   if (t >= 10) return '쌀쌀';
   if (t >= 6) return '꽤 추움';
   if (t >= 0) return '추움';
@@ -1884,7 +1881,7 @@ async function fetchWeather() {
 
     // ── 주간 날씨 ──
     try {
-      const wkRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&timezone=Asia/Seoul&forecast_days=7&past_days=1');
+      const wkRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&hourly=temperature_2m&timezone=Asia/Seoul&forecast_days=7&past_days=1');
       const wk = await wkRes.json();
       const wkEl = document.getElementById('weeklyForecast');
       const dayN = ['일','월','화','수','목','금','토'];
@@ -1910,8 +1907,13 @@ async function fetchWeather() {
         const dn = dayN[d.getDay()];
         const dayClass = d.getDay() === 0 ? ' sun' : d.getDay() === 6 ? ' sat' : '';
         const label = i === 0 ? '오늘' : `${d.getMonth()+1}/${d.getDate()}`;
-        const mn = Math.round(allMins[i]);
-        const mx = Math.round(allMaxs[i]);
+        // 오전(6~12) / 오후(12~18) 평균 기온
+        const dayStart = i * 24;
+        const hourlyTemps = wk.hourly.temperature_2m;
+        const amTemps = hourlyTemps.slice(dayStart + 6, dayStart + 12).filter(t => t !== null);
+        const pmTemps = hourlyTemps.slice(dayStart + 12, dayStart + 18).filter(t => t !== null);
+        const mn = amTemps.length ? Math.round(amTemps.reduce((a,b)=>a+b,0)/amTemps.length) : Math.round(allMins[i]);
+        const mx = pmTemps.length ? Math.round(pmTemps.reduce((a,b)=>a+b,0)/pmTemps.length) : Math.round(allMaxs[i]);
         const icon = wkIcon(wk.daily.weather_code[i]);
         const pop = wk.daily.precipitation_probability_max[i] || 0;
         const barL = ((mn - absMin) / absRange) * 100;
@@ -1927,8 +1929,8 @@ async function fetchWeather() {
         if (isToday) dateText = '오늘';
         else if (isYesterday) dateText = '어제';
 
-        const wkDayStr = feelLabel(mx);
-        const wkNightStr = feelLabel(mn);
+        const wkAmStr = feelLabel(mn);
+        const wkPmStr = feelLabel(mx);
 
         wkHtml += `<div class="weekly-row${isToday ? ' weekly-today' : ''}">
           <div class="weekly-label">
@@ -1945,8 +1947,8 @@ async function fetchWeather() {
             </div>
           </div>
           <div class="weekly-clothes">
-            <span class="wk-tag day">☀️ ${wkDayStr}</span>
-            <span class="wk-tag night">🌙 ${wkNightStr}</span>
+            <span class="wk-tag day">오전 ${wkAmStr}</span>
+            <span class="wk-tag night">오후 ${wkPmStr}</span>
           </div>
         </div>`;
       }
