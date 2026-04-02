@@ -752,6 +752,7 @@
       align-items: center;
       padding: 16px 20px;
       border-bottom: 1px solid #f0f0f0;
+      gap: 12px;
     }
     .weekly-row:last-child { border-bottom: none; }
     .weekly-row.weekly-today { background: #eef6ff; }
@@ -779,7 +780,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-left: auto;
+      min-width: 160px;
     }
     .weekly-pop {
       font-size: 12px;
@@ -819,13 +820,13 @@
     .weekly-top {
       display: flex;
       align-items: center;
-      width: 100%;
     }
     .weekly-clothes {
       display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
+      flex-direction: column;
+      gap: 4px;
+      margin-left: auto;
+      flex-shrink: 0;
     }
     .wk-tag {
       font-size: 11px;
@@ -1929,19 +1930,17 @@ async function fetchWeather() {
         const wkNightStr = [wkNight.outer, wkNight.top, wkNight.bottom].filter(Boolean).join(' + ');
 
         wkHtml += `<div class="weekly-row${isToday ? ' weekly-today' : ''}">
-          <div class="weekly-top">
-            <div class="weekly-label">
-              <span class="weekly-date${dayClass}">${dateText}</span>
-              <span class="weekly-day${dayClass}">${dn}</span>
-            </div>
-            <div class="weekly-right">
-              <span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span>
-              <span class="weekly-icon">${icon}</span>
-              <div class="weekly-temps">
-                <span class="weekly-min">${mn}°</span>
-                <span class="weekly-sep">/</span>
-                <span class="weekly-max">${mx}°</span>
-              </div>
+          <div class="weekly-label">
+            <span class="weekly-date${dayClass}">${dateText}</span>
+            <span class="weekly-day${dayClass}">${dn}</span>
+          </div>
+          <div class="weekly-right">
+            <span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span>
+            <span class="weekly-icon">${icon}</span>
+            <div class="weekly-temps">
+              <span class="weekly-min">${mn}°</span>
+              <span class="weekly-sep">/</span>
+              <span class="weekly-max">${mx}°</span>
             </div>
           </div>
           <div class="weekly-clothes">
