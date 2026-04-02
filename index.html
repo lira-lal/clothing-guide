@@ -1142,6 +1142,20 @@ function updateOutfitTable() {
   });
 }
 
+// ── 기온 → 체감 문구 ──
+function feelLabel(t) {
+  if (t >= 28) return '매우 더움';
+  if (t >= 23) return '더움';
+  if (t >= 20) return '쾌적';
+  if (t >= 17) return '선선';
+  if (t >= 12) return '약간 쌀쌀';
+  if (t >= 10) return '쌀쌀';
+  if (t >= 6) return '꽤 추움';
+  if (t >= 0) return '추움';
+  if (t >= -7) return '매우 추움';
+  return '극한';
+}
+
 // ── 미세먼지 등급 (한국 기준) ──
 function dustLevel(pm25, pm10) {
   let level = '좋음', grade = 0;
@@ -1622,7 +1636,7 @@ async function fetchWeather() {
       <div class="hero-temp-row">
         <div class="hero-big-temp">${curTemp}°</div>
         <div class="hero-temp-info">
-          <div class="weather-label">${dayLabel}</div>
+          <div class="weather-label">${dayLabel} · ${feelLabel(curTemp)}</div>
           <div class="minmax">↓${tMin}° ↑${tMax}°</div>
         </div>
       </div>
