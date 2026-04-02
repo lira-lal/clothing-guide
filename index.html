@@ -753,14 +753,21 @@
       justify-content: space-between;
       padding: 14px 12px;
       border-bottom: 1px solid #f0f0f0;
+      gap: 8px;
     }
     .weekly-row:last-child { border-bottom: none; }
     .weekly-row.weekly-today { background: #eef6ff; }
+    .weekly-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
     .weekly-label {
       display: flex;
       align-items: baseline;
       gap: 4px;
-      min-width: 56px;
+      min-width: 50px;
       flex-shrink: 0;
     }
     .weekly-date {
@@ -777,20 +784,28 @@
     }
     .weekly-day.sun { color: #e53e3e; }
     .weekly-day.sat { color: #4299e1; }
-    .weekly-right {
+    .weekly-weather {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .ww-row {
       display: flex;
       align-items: center;
       gap: 4px;
     }
+    .ww-label {
+      font-size: 11px;
+      color: #9ca3af;
+      width: 16px;
+    }
     .weekly-pop {
-      font-size: 12px;
+      font-size: 11px;
       color: #4299e1;
-      min-width: 38px;
-      text-align: right;
     }
     .weekly-icon {
-      font-size: 18px;
-      width: 24px;
+      font-size: 16px;
+      width: 22px;
       text-align: center;
       flex-shrink: 0;
     }
@@ -803,6 +818,7 @@
       font-size: 13px;
       color: #4299e1;
       font-weight: 600;
+      width: 30px;
       text-align: right;
     }
     .weekly-sep {
@@ -813,7 +829,8 @@
       font-size: 13px;
       color: #ed8936;
       font-weight: 600;
-      text-align: right;
+      width: 30px;
+      text-align: left;
     }
 
     .weekly-top {
@@ -832,7 +849,9 @@
       padding: 2px 6px;
       border-radius: 6px;
       white-space: nowrap;
-      text-align: right;
+      text-align: center;
+      min-width: 52px;
+      display: inline-block;
     }
     .wk-tag.day { background: #dbeafe; color: #1e40af; }
     .wk-tag.night { background: #fef3c7; color: #92400e; }
@@ -1881,7 +1900,7 @@ async function fetchWeather() {
 
     // ── 주간 날씨 ──
     try {
-      const wkRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&hourly=temperature_2m&timezone=Asia/Seoul&forecast_days=7&past_days=1');
+      const wkRes = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&hourly=temperature_2m,weather_code&timezone=Asia/Seoul&forecast_days=7&past_days=1');
       const wk = await wkRes.json();
       const wkEl = document.getElementById('weeklyForecast');
       const dayN = ['일','월','화','수','목','금','토'];
@@ -1907,14 +1926,17 @@ async function fetchWeather() {
         const dn = dayN[d.getDay()];
         const dayClass = d.getDay() === 0 ? ' sun' : d.getDay() === 6 ? ' sat' : '';
         const label = i === 0 ? '오늘' : `${d.getMonth()+1}/${d.getDate()}`;
-        // 오전(6~12) / 오후(12~18) 평균 기온
+        const mn = Math.round(allMins[i]);
+        const mx = Math.round(allMaxs[i]);
+        // 오전/오후 날씨 아이콘
         const dayStart = i * 24;
         const hourlyTemps = wk.hourly.temperature_2m;
-        const amTemps = hourlyTemps.slice(dayStart + 6, dayStart + 12).filter(t => t !== null);
-        const pmTemps = hourlyTemps.slice(dayStart + 12, dayStart + 18).filter(t => t !== null);
-        const mn = amTemps.length ? Math.round(amTemps.reduce((a,b)=>a+b,0)/amTemps.length) : Math.round(allMins[i]);
-        const mx = pmTemps.length ? Math.round(pmTemps.reduce((a,b)=>a+b,0)/pmTemps.length) : Math.round(allMaxs[i]);
-        const icon = wkIcon(wk.daily.weather_code[i]);
+        const amCodes = wk.hourly?.weather_code?.slice(dayStart + 6, dayStart + 12) || [];
+        const pmCodes = wk.hourly?.weather_code?.slice(dayStart + 12, dayStart + 18) || [];
+        const amMode = amCodes.length ? amCodes.sort((a,b) => amCodes.filter(v=>v===a).length - amCodes.filter(v=>v===b).length).pop() : wk.daily.weather_code[i];
+        const pmMode = pmCodes.length ? pmCodes.sort((a,b) => pmCodes.filter(v=>v===a).length - pmCodes.filter(v=>v===b).length).pop() : wk.daily.weather_code[i];
+        const amIcon = wkIcon(amMode);
+        const pmIcon = wkIcon(pmMode);
         const pop = wk.daily.precipitation_probability_max[i] || 0;
         const barL = ((mn - absMin) / absRange) * 100;
         const barR = ((mx - absMin) / absRange) * 100;
@@ -1929,26 +1951,24 @@ async function fetchWeather() {
         if (isToday) dateText = '오늘';
         else if (isYesterday) dateText = '어제';
 
-        const wkAmStr = feelLabel(mn);
-        const wkPmStr = feelLabel(mx);
+        const wkAmStr = feelLabel(mx);
+        const wkPmStr = feelLabel(mn);
 
         wkHtml += `<div class="weekly-row${isToday ? ' weekly-today' : ''}">
-          <div class="weekly-label">
-            <span class="weekly-date${dayClass}">${dateText}</span>
-            <span class="weekly-day${dayClass}">${dn}</span>
-          </div>
-          <div class="weekly-right">
-            <span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span>
-            <span class="weekly-icon">${icon}</span>
+          <div class="weekly-left">
+            <div class="weekly-label">
+              <span class="weekly-date${dayClass}">${dateText}</span>
+              <span class="weekly-day${dayClass}">${dn}</span>
+            </div>
             <div class="weekly-temps">
               <span class="weekly-min">${mn}°</span>
               <span class="weekly-sep">/</span>
               <span class="weekly-max">${mx}°</span>
             </div>
           </div>
-          <div class="weekly-clothes">
-            <span class="wk-tag day">오전 ${wkAmStr}</span>
-            <span class="wk-tag night">오후 ${wkPmStr}</span>
+          <div class="weekly-weather">
+            <div class="ww-row"><span class="ww-label">낮</span><span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span><span class="weekly-icon">${pmIcon}</span><span class="wk-tag night">${wkAmStr}</span></div>
+            <div class="ww-row"><span class="ww-label">밤</span><span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span><span class="weekly-icon">${amIcon}</span><span class="wk-tag day">${wkPmStr}</span></div>
           </div>
         </div>`;
       }
