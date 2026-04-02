@@ -785,6 +785,7 @@
     }
     .weekly-day.sun { color: #e53e3e; }
     .weekly-day.sat { color: #4299e1; }
+    .weekly-day.yd, .weekly-date.yd { color: #9ca3af !important; opacity: 1; }
     .weekly-weather {
       display: flex;
       flex-direction: column;
@@ -1958,8 +1959,8 @@ async function fetchWeather() {
         wkHtml += `<div class="weekly-row${isToday ? ' weekly-today' : ''}">
           <div class="weekly-left">
             <div class="weekly-label">
-              <span class="weekly-date${dayClass}">${dateText}</span>
-              <span class="weekly-day${dayClass}">${dn}</span>
+              <span class="weekly-day${dayClass}${isYesterday ? ' yd' : ''}">${dn}</span>
+              <span class="weekly-date${dayClass}${isYesterday ? ' yd' : ''}">${dateText}</span>
             </div>
             <div class="weekly-temps">
               <span class="weekly-min">${mn}°</span>
