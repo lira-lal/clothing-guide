@@ -816,6 +816,26 @@
       text-align: right;
     }
 
+    .weekly-top {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .weekly-clothes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .wk-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .wk-tag.day { background: #fef3c7; color: #92400e; }
+    .wk-tag.night { background: #e0e7ff; color: #3730a3; }
+
     /* ── Bottom Tab ── */
     .tab-content { display: none; }
     .tab-content.active { display: block; }
@@ -1599,12 +1619,6 @@ async function fetchWeather() {
         <span class="alert-text"><strong>우산 + 방수부츠!</strong> 눈 소식 있음${hrs ? ' ('+hrs+')' : ''} · 미끄럼 주의</span>
       </div>`;
     }
-    if (!hasRain && !hasSnow && maxPop >= 30) {
-      alerts += `<div class="alert-banner alert-rain">
-        <span class="alert-icon">🌂</span>
-        <span class="alert-text"><strong>접이식 우산 챙기세요!</strong> 강수확률 ${maxPop}% — 비 올 수도 있어요</span>
-      </div>`;
-    }
 
     // ── 옷 추천 (낮/밤) ──
     const dayClothes = clothesFor(tMax);
@@ -1616,7 +1630,7 @@ async function fetchWeather() {
 
     // 아이템 (우산, 마스크 등)
     const itemList = [];
-    if (hasRain || hasSnow || maxPop >= 30) itemList.push('우산');
+    if (hasRain || hasSnow || maxPop >= 70) itemList.push('우산');
     if (dust.grade >= 2) itemList.push('KF94 마스크', '안경');
     if (uvMax >= 6) itemList.push('선글라스');
     if (nightClothes.acc) itemList.push(nightClothes.acc);
@@ -1909,19 +1923,30 @@ async function fetchWeather() {
         if (isToday) dateText = '오늘';
         else if (isYesterday) dateText = '어제';
 
+        const wkDay = clothesFor(mx);
+        const wkNight = clothesFor(mn);
+        const wkDayStr = [wkDay.outer, wkDay.top, wkDay.bottom].filter(Boolean).join(' + ');
+        const wkNightStr = [wkNight.outer, wkNight.top, wkNight.bottom].filter(Boolean).join(' + ');
+
         wkHtml += `<div class="weekly-row${isToday ? ' weekly-today' : ''}">
-          <div class="weekly-label">
-            <span class="weekly-date${dayClass}">${dateText}</span>
-            <span class="weekly-day${dayClass}">${dn}</span>
-          </div>
-          <div class="weekly-right">
-            <span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span>
-            <span class="weekly-icon">${icon}</span>
-            <div class="weekly-temps">
-              <span class="weekly-min">${mn}°</span>
-              <span class="weekly-sep">/</span>
-              <span class="weekly-max">${mx}°</span>
+          <div class="weekly-top">
+            <div class="weekly-label">
+              <span class="weekly-date${dayClass}">${dateText}</span>
+              <span class="weekly-day${dayClass}">${dn}</span>
             </div>
+            <div class="weekly-right">
+              <span class="weekly-pop">${pop >= 70 ? pop+'%' : ''}</span>
+              <span class="weekly-icon">${icon}</span>
+              <div class="weekly-temps">
+                <span class="weekly-min">${mn}°</span>
+                <span class="weekly-sep">/</span>
+                <span class="weekly-max">${mx}°</span>
+              </div>
+            </div>
+          </div>
+          <div class="weekly-clothes">
+            <span class="wk-tag day">☀️ ${wkDayStr}</span>
+            <span class="wk-tag night">🌙 ${wkNightStr}</span>
           </div>
         </div>`;
       }
