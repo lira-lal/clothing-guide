@@ -1699,13 +1699,23 @@ async function fetchWeather() {
       bg = mkGrad('#8B8883','#7C776F','#636260');
       shadow = '0 8px 32px rgba(92,87,80,0.35)';
     }
-    // 2. 일출 (앞뒤 20분)
-    else if (nowMin >= srMin - 20 && nowMin <= srMin + 20) {
-      bg = mkGrad('#4E73A4','#8B99BA','#B08E9A');
+    // 2. 일출 전 20분
+    else if (nowMin >= srMin - 20 && nowMin < srMin) {
+      bg = mkGrad('#1E3760','#585C83','#9E8381');
+      shadow = '0 8px 32px rgba(30,55,96,0.35)';
+    }
+    // 3. 일출 후 20분
+    else if (nowMin >= srMin && nowMin <= srMin + 20) {
+      bg = mkGrad('#4E73A4','#B48D7C','#E8865C');
       shadow = '0 8px 32px rgba(78,115,164,0.35)';
     }
-    // 3. 일몰 (앞뒤 20분)
-    else if (nowMin >= ssMin - 20 && nowMin <= ssMin + 20) {
+    // 4. 일몰 전 20분
+    else if (nowMin >= ssMin - 20 && nowMin < ssMin) {
+      bg = mkGrad('#4E73A4','#8B8CBA','#DB8067');
+      shadow = '0 8px 32px rgba(78,115,164,0.35)';
+    }
+    // 5. 일몰 후 20분
+    else if (nowMin >= ssMin && nowMin <= ssMin + 20) {
       bg = mkGrad('#1E3760','#585C83','#9E8381');
       shadow = '0 8px 32px rgba(30,55,96,0.35)';
     }
