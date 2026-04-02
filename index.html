@@ -1927,10 +1927,8 @@ async function fetchWeather() {
         if (isToday) dateText = '오늘';
         else if (isYesterday) dateText = '어제';
 
-        const wkDay = clothesFor(mx);
-        const wkNight = clothesFor(mn);
-        const wkDayStr = [wkDay.outer, wkDay.top, wkDay.bottom].filter(Boolean).join(' + ');
-        const wkNightStr = [wkNight.outer, wkNight.top, wkNight.bottom].filter(Boolean).join(' + ');
+        const wkDayStr = feelLabel(mx);
+        const wkNightStr = feelLabel(mn);
 
         wkHtml += `<div class="weekly-row${isToday ? ' weekly-today' : ''}">
           <div class="weekly-label">
