@@ -745,32 +745,33 @@
       border-radius: 16px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
       margin-bottom: 40px;
-      overflow: hidden;
+      overflow-x: auto;
     }
     .weekly-row {
       display: flex;
       align-items: center;
-      padding: 16px 20px;
+      padding: 14px 12px;
       border-bottom: 1px solid #f0f0f0;
-      gap: 12px;
+      gap: 6px;
     }
     .weekly-row:last-child { border-bottom: none; }
     .weekly-row.weekly-today { background: #eef6ff; }
     .weekly-label {
       display: flex;
       align-items: baseline;
-      gap: 6px;
-      min-width: 80px;
+      gap: 4px;
+      min-width: 56px;
+      flex-shrink: 0;
     }
     .weekly-date {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: #1a1a2e;
     }
     .weekly-date.sun { color: #e53e3e; }
     .weekly-date.sat { color: #4299e1; }
     .weekly-day {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: #1a1a2e;
     }
@@ -779,8 +780,7 @@
     .weekly-right {
       display: flex;
       align-items: center;
-      gap: 10px;
-      min-width: 160px;
+      gap: 6px;
     }
     .weekly-pop {
       font-size: 12px;
@@ -789,9 +789,10 @@
       text-align: right;
     }
     .weekly-icon {
-      font-size: 20px;
-      width: 28px;
+      font-size: 18px;
+      width: 24px;
       text-align: center;
+      flex-shrink: 0;
     }
     .weekly-temps {
       display: flex;
@@ -799,21 +800,21 @@
       gap: 4px;
     }
     .weekly-min {
-      font-size: 14px;
+      font-size: 13px;
       color: #4299e1;
       font-weight: 600;
-      width: 32px;
+      width: 28px;
       text-align: right;
     }
     .weekly-sep {
-      font-size: 12px;
+      font-size: 11px;
       color: #d1d5db;
     }
     .weekly-max {
-      font-size: 14px;
+      font-size: 13px;
       color: #ed8936;
       font-weight: 600;
-      width: 32px;
+      width: 28px;
       text-align: right;
     }
 
@@ -827,12 +828,14 @@
       gap: 4px;
       margin-left: auto;
       flex-shrink: 0;
+      align-items: flex-end;
     }
     .wk-tag {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 8px;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 6px;
       white-space: nowrap;
+      text-align: right;
     }
     .wk-tag.day { background: #fef3c7; color: #92400e; }
     .wk-tag.night { background: #e0e7ff; color: #3730a3; }
