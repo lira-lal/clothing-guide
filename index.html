@@ -1789,9 +1789,9 @@ async function fetchWeather() {
     const srMin = sunriseH * 60 + sunriseM;
     const ssMin = sunsetH * 60 + sunsetM;
 
-    // 현재 시간 PTY/SKY
-    const curPty = ptys[curHour] || 0;
-    const curSky = skys[curHour] || 1;
+    // 현재 시간 PTY/SKY (데이터 없으면 하루 대표값)
+    const curPty = ptys[curHour] ?? modePty;
+    const curSky = skys[curHour] ?? modeSky;
 
     function mkGrad(c1, c2, c3) {
       return `linear-gradient(135deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)`;
