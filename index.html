@@ -1586,7 +1586,15 @@ async function fetchWeather() {
     function precipHourStr(checkFn) {
       const hrs = ptys.map((p,i) => checkFn(p) ? i : -1).filter(h => h >= 0);
       if (!hrs.length) return '';
-      return `${hrs[0]}시~${hrs[hrs.length-1]+1}시`;
+      function fmtH(h) {
+        if (h < 24) return `오늘 ${h}시`;
+        return `내일 ${h - 24}시`;
+      }
+      const startH = hrs[0];
+      const endH = hrs[hrs.length-1] + 1;
+      if (startH < 24 && endH <= 24) return `오늘 ${startH}시~${endH}시`;
+      if (startH >= 24) return `내일 ${startH-24}시~${endH-24}시`;
+      return `오늘 ${startH}시~내일 ${endH-24}시`;
     }
 
     // 미세먼지 파싱
