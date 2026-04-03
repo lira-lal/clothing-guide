@@ -350,8 +350,8 @@
       margin-bottom: 12px;
       height: 16px;
     }
-    .hg-compare.down { color: #93c5fd; }
-    .hg-compare.up { color: #fca5a5; }
+    .hg-compare .down { color: #93c5fd; }
+    .hg-compare .up { color: #ed8936; }
     .hg-pop-row {
       font-size: 12px;
       color: #6b7280;
@@ -1976,9 +1976,9 @@ async function fetchWeather() {
       let cmpHtml = '';
       if (yesterdayTemps[realH] !== undefined && yesterdayTemps[realH] !== null) {
         const diff = t - Math.round(yesterdayTemps[realH]);
-        if (diff > 0) cmpHtml = `<span class="up">+${diff}°</span>`;
-        else if (diff < 0) cmpHtml = `<span class="down">${diff}°</span>`;
-        else cmpHtml = '같음';
+        if (diff > 0) cmpHtml = `<span class="up">↑${diff}°</span>`;
+        else if (diff < 0) cmpHtml = `<span class="down">↓${Math.abs(diff)}°</span>`;
+        else cmpHtml = `<span style="color:#d1d5db">같음</span>`;
       }
 
       graphHtml += `<div class="hg-col${isNow ? ' now' : ''}">
