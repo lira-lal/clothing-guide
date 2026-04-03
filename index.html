@@ -1624,6 +1624,27 @@ async function fetchWeather() {
     // 일출/일몰
     let sunriseH = 6, sunriseM = 0, sunsetH = 18, sunsetM = 30, uvMax = 0;
     let yesterdayTemps = [];
+
+    // 어제 기온: 기상청 ASOS 우선 → Open-Meteo 백업
+    try {
+      const yd = new Date(); yd.setDate(yd.getDate() - 1);
+      const ydStr = yd.getFullYear() + String(yd.getMonth()+1).padStart(2,'0') + String(yd.getDate()).padStart(2,'0');
+      const asosUrl = `https://apis.data.go.kr/1360000/AsosHourlyInfoService/getWthrDataList?serviceKey=${KMA_KEY}&numOfRows=24&pageNo=1&dataType=JSON&dataCd=ASOS&dateCd=HR&startDt=${ydStr}&startHh=00&endDt=${ydStr}&endHh=23&stnIds=${ASOS_STN}`;
+      const asosRes = await fetch(asosUrl);
+      if (asosRes.ok) {
+        const asosData = await asosRes.json();
+        const asosItems = asosData.response?.body?.items?.item;
+        if (asosItems && asosItems.length) {
+          for (let h = 0; h < 24; h++) yesterdayTemps[h] = null;
+          for (const it of asosItems) {
+            const h = parseInt(it.tm.slice(11, 13));
+            yesterdayTemps[h] = parseFloat(it.ta);
+          }
+        }
+      }
+    } catch(e) {}
+
+    // 일출/일몰 + UV + 어제 백업 (Open-Meteo)
     try {
       const sunRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.6027&longitude=126.9291&daily=sunrise,sunset,uv_index_max&hourly=temperature_2m&timezone=Asia/Seoul&forecast_days=1&past_days=1`);
       const sunData = await sunRes.json();
@@ -1632,8 +1653,10 @@ async function fetchWeather() {
       sunriseH = parseInt(sr.slice(11,13)); sunriseM = parseInt(sr.slice(14,16));
       sunsetH = parseInt(ss.slice(11,13)); sunsetM = parseInt(ss.slice(14,16));
       uvMax = Math.round(sunData.daily.uv_index_max[0] || 0);
-      // 어제 시간별 기온 (0~23 = 어제, 24~47 = 오늘)
-      yesterdayTemps = sunData.hourly.temperature_2m.slice(0, 24);
+      // 어제 기온 백업 (ASOS 데이터 없을 때만)
+      if (!yesterdayTemps.length || yesterdayTemps.every(t => t === null)) {
+        yesterdayTemps = sunData.hourly.temperature_2m.slice(0, 24);
+      }
     } catch(e) {}
 
     // 날짜/시간
