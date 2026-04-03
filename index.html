@@ -1592,6 +1592,9 @@ async function fetchWeather() {
     const validSkys = skys.filter(s => s !== null);
     const modeSky = validSkys.length ? validSkys.sort((a,b) =>
       validSkys.filter(v=>v===a).length - validSkys.filter(v=>v===b).length).pop() : 1;
+    // 현재 시간 (비/눈 판별에 필요)
+    const curHour = new Date().getHours();
+
     // 오늘(0~23) / 내일(24~47) 비/눈 분리
     const todayPtys = ptys.slice(0, 24);
     const tmrwPtys = ptys.slice(24, 48);
@@ -1753,7 +1756,6 @@ async function fetchWeather() {
     const itemStr = itemList.length ? itemList.join(', ') : '없음';
 
     // 현재 시간 기온
-    const curHour = now.getHours();
     const curTemp = temps[curHour] !== null ? temps[curHour] : Math.round((tMax + tMin) / 2);
 
     // 어제 같은 시간 비교 (API)
