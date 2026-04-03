@@ -1774,15 +1774,9 @@ async function fetchWeather() {
     const srMin = sunriseH * 60 + sunriseM;
     const ssMin = sunsetH * 60 + sunsetM;
 
-    // 현재 시간 PTY/SKY (데이터 없으면 가장 가까운 시간 or 대표값)
-    let curPty = modePty, curSky = modeSky;
-    if (ptys[curHour] != null) { curPty = ptys[curHour]; curSky = skys[curHour]; }
-    else {
-      for (let offset = 1; offset <= 3; offset++) {
-        if (ptys[curHour+offset] != null) { curPty = ptys[curHour+offset]; curSky = skys[curHour+offset]; break; }
-        if (ptys[curHour-offset] != null) { curPty = ptys[curHour-offset]; curSky = skys[curHour-offset]; break; }
-      }
-    }
+    // 배경색용 PTY/SKY — 헤더 날씨 텍스트(dayLabel)와 일치시킴
+    const curPty = modePty;
+    const curSky = modeSky;
 
     function mkGrad(c1, c2, c3) {
       return `linear-gradient(135deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)`;
