@@ -1655,18 +1655,44 @@ async function fetchWeather() {
       }
     } catch(e) {}
 
-    // 일출/일몰
+    // 일출/일몰 + 어제기온 + 주간날씨 병렬 호출
     let sunriseH = 6, sunriseM = 0, sunsetH = 18, sunsetM = 30, uvMax = 0;
     let yesterdayTemps = [];
+    let wkData = null;
 
-    // 어제 기온: 기상청 ASOS 우선 → Open-Meteo 백업
-    if (R.useKma) try {
-      const yd = new Date(); yd.setDate(yd.getDate() - 1);
-      const ydStr = yd.getFullYear() + String(yd.getMonth()+1).padStart(2,'0') + String(yd.getDate()).padStart(2,'0');
-      const asosUrl = `https://apis.data.go.kr/1360000/AsosHourlyInfoService/getWthrDataList?serviceKey=${KMA_KEY}&numOfRows=24&pageNo=1&dataType=JSON&dataCd=ASOS&dateCd=HR&startDt=${ydStr}&startHh=00&endDt=${ydStr}&endHh=23&stnIds=${R.asos}`;
-      const asosRes = await fetch(asosUrl);
-      if (asosRes.ok) {
-        const asosData = await asosRes.json();
+    const yd = new Date(); yd.setDate(yd.getDate() - 1);
+    const ydStr2 = yd.getFullYear() + String(yd.getMonth()+1).padStart(2,'0') + String(yd.getDate()).padStart(2,'0');
+
+    const parallelFetches = [
+      // 일출/일몰 + UV + 어제기온
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${R.lat}&longitude=${R.lon}&daily=sunrise,sunset,uv_index_max&hourly=temperature_2m&timezone=${encodeURIComponent(R.tz)}&forecast_days=1&past_days=1`).then(r=>r.json()).catch(()=>null),
+      // 주간 7일
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${R.lat}&longitude=${R.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&hourly=temperature_2m,weather_code&timezone=${encodeURIComponent(R.tz)}&forecast_days=7&past_days=1`).then(r=>r.json()).catch(()=>null),
+    ];
+    // ASOS (한국만)
+    if (R.useKma) {
+      parallelFetches.push(
+        fetch(`https://apis.data.go.kr/1360000/AsosHourlyInfoService/getWthrDataList?serviceKey=${KMA_KEY}&numOfRows=24&pageNo=1&dataType=JSON&dataCd=ASOS&dateCd=HR&startDt=${ydStr2}&startHh=00&endDt=${ydStr2}&endHh=23&stnIds=${R.asos}`).then(r=>r.json()).catch(()=>null)
+      );
+    }
+
+    const [sunData, weeklyData, asosData] = await Promise.all(parallelFetches);
+
+    // 일출/일몰 파싱
+    if (sunData) {
+      try {
+        const sr = sunData.daily.sunrise[0];
+        const ss = sunData.daily.sunset[0];
+        sunriseH = parseInt(sr.slice(11,13)); sunriseM = parseInt(sr.slice(14,16));
+        sunsetH = parseInt(ss.slice(11,13)); sunsetM = parseInt(ss.slice(14,16));
+        uvMax = Math.round(sunData.daily.uv_index_max[0] || 0);
+        yesterdayTemps = sunData.hourly.temperature_2m.slice(0, 24);
+      } catch(e) {}
+    }
+
+    // ASOS 어제 기온 (있으면 덮어쓰기)
+    if (asosData) {
+      try {
         const asosItems = asosData.response?.body?.items?.item;
         if (asosItems && asosItems.length) {
           for (let h = 0; h < 24; h++) yesterdayTemps[h] = null;
@@ -1675,23 +1701,11 @@ async function fetchWeather() {
             yesterdayTemps[h] = parseFloat(it.ta);
           }
         }
-      }
-    } catch(e) {}
+      } catch(e) {}
+    }
 
-    // 일출/일몰 + UV + 어제 백업 (Open-Meteo)
-    try {
-      const sunRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${R.lat}&longitude=${R.lon}&daily=sunrise,sunset,uv_index_max&hourly=temperature_2m&timezone=${encodeURIComponent(R.tz)}&forecast_days=1&past_days=1`);
-      const sunData = await sunRes.json();
-      const sr = sunData.daily.sunrise[0];
-      const ss = sunData.daily.sunset[0];
-      sunriseH = parseInt(sr.slice(11,13)); sunriseM = parseInt(sr.slice(14,16));
-      sunsetH = parseInt(ss.slice(11,13)); sunsetM = parseInt(ss.slice(14,16));
-      uvMax = Math.round(sunData.daily.uv_index_max[0] || 0);
-      // 어제 기온 백업 (ASOS 데이터 없을 때만)
-      if (!yesterdayTemps.length || yesterdayTemps.every(t => t === null)) {
-        yesterdayTemps = sunData.hourly.temperature_2m.slice(0, 24);
-      }
-    } catch(e) {}
+    // 주간 데이터 저장 (뒤에서 렌더링)
+    wkData = weeklyData;
 
     // 날짜/시간
     const now = new Date();
@@ -2061,9 +2075,8 @@ async function fetchWeather() {
     `;
 
     // ── 주간 날씨 ──
-    try {
-      const wkRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${R.lat}&longitude=${R.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&hourly=temperature_2m,weather_code&timezone=${encodeURIComponent(R.tz)}&forecast_days=7&past_days=1`);
-      const wk = await wkRes.json();
+    if (wkData) try {
+      const wk = wkData;
       const wkEl = document.getElementById('weeklyForecast');
       const dayN = ['일','월','화','수','목','금','토'];
       const allMins = wk.daily.temperature_2m_min;
