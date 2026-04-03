@@ -1518,24 +1518,7 @@ async function fetchWeather() {
       }
     }
 
-    // 미세먼지 (환경공단 → Open-Meteo 백업)
-    let airRes = null;
-    let airSource = 'openmeteo';
-    if (R.useKma && R.air) {
-      try {
-        const airUrl = `https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=${AIR_KEY}&returnType=json&numOfRows=1&pageNo=1&stationName=${encodeURIComponent(R.air)}&dataTerm=DAILY&ver=1.0`;
-        const r = await fetch(airUrl);
-        if (!r.ok) throw new Error('Air ' + r.status);
-        airRes = await r.json();
-        airSource = 'kma';
-      } catch(e) {}
-    }
-    if (airSource === 'openmeteo') {
-      try {
-        const r = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${R.lat}&longitude=${R.lon}&hourly=pm10,pm2_5&timezone=${encodeURIComponent(R.tz)}&forecast_days=1`);
-        airRes = await r.json();
-      } catch(e2) {}
-    }
+    // 미세먼지 (병렬에서 처리됨, 아래에서 파싱)
 
     // 오늘+내일 데이터 추출, 날짜+시간별로 정리
     const tomorrowD = new Date(today); tomorrowD.setDate(tomorrowD.getDate()+1);
@@ -1641,14 +1624,14 @@ async function fetchWeather() {
     // 미세먼지 파싱
     let dust = { level:'좋음', grade:0, pm25:0, pm10:0 };
     try {
-      if (airRes && airSource === 'kma') {
-        const airItem = airRes.response.body.items[0];
+      if (airRaw && airRaw.response?.body?.items) {
+        const airItem = airRaw.response.body.items[0];
         if (airItem) {
           dust = dustLevel(parseFloat(airItem.pm25Value)||0, parseFloat(airItem.pm10Value)||0);
         }
-      } else if (airRes && airSource === 'openmeteo') {
-        const pm25Vals = airRes.hourly.pm2_5.slice(0,24).filter(v => v !== null);
-        const pm10Vals = airRes.hourly.pm10.slice(0,24).filter(v => v !== null);
+      } else if (airRaw && airRaw.hourly) {
+        const pm25Vals = airRaw.hourly.pm2_5.slice(0,24).filter(v => v !== null);
+        const pm10Vals = airRaw.hourly.pm10.slice(0,24).filter(v => v !== null);
         const avgPm25 = pm25Vals.length ? pm25Vals.reduce((a,b)=>a+b,0)/pm25Vals.length : 0;
         const avgPm10 = pm10Vals.length ? pm10Vals.reduce((a,b)=>a+b,0)/pm10Vals.length : 0;
         dust = dustLevel(avgPm25, avgPm10);
@@ -1664,19 +1647,21 @@ async function fetchWeather() {
     const ydStr2 = yd.getFullYear() + String(yd.getMonth()+1).padStart(2,'0') + String(yd.getDate()).padStart(2,'0');
 
     const parallelFetches = [
-      // 일출/일몰 + UV + 어제기온
+      // 0: 일출/일몰 + UV + 어제기온
       fetch(`https://api.open-meteo.com/v1/forecast?latitude=${R.lat}&longitude=${R.lon}&daily=sunrise,sunset,uv_index_max&hourly=temperature_2m&timezone=${encodeURIComponent(R.tz)}&forecast_days=1&past_days=1`).then(r=>r.json()).catch(()=>null),
-      // 주간 7일
+      // 1: 주간 7일
       fetch(`https://api.open-meteo.com/v1/forecast?latitude=${R.lat}&longitude=${R.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&hourly=temperature_2m,weather_code&timezone=${encodeURIComponent(R.tz)}&forecast_days=7&past_days=1`).then(r=>r.json()).catch(()=>null),
+      // 2: 미세먼지 (환경공단 or Open-Meteo)
+      R.useKma && R.air
+        ? fetch(`https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=${AIR_KEY}&returnType=json&numOfRows=1&pageNo=1&stationName=${encodeURIComponent(R.air)}&dataTerm=DAILY&ver=1.0`).then(r=>r.ok?r.json():null).catch(()=>null)
+        : fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${R.lat}&longitude=${R.lon}&hourly=pm10,pm2_5&timezone=${encodeURIComponent(R.tz)}&forecast_days=1`).then(r=>r.json()).catch(()=>null),
+      // 3: ASOS (한국만)
+      R.useKma
+        ? fetch(`https://apis.data.go.kr/1360000/AsosHourlyInfoService/getWthrDataList?serviceKey=${KMA_KEY}&numOfRows=24&pageNo=1&dataType=JSON&dataCd=ASOS&dateCd=HR&startDt=${ydStr2}&startHh=00&endDt=${ydStr2}&endHh=23&stnIds=${R.asos}`).then(r=>r.json()).catch(()=>null)
+        : Promise.resolve(null),
     ];
-    // ASOS (한국만)
-    if (R.useKma) {
-      parallelFetches.push(
-        fetch(`https://apis.data.go.kr/1360000/AsosHourlyInfoService/getWthrDataList?serviceKey=${KMA_KEY}&numOfRows=24&pageNo=1&dataType=JSON&dataCd=ASOS&dateCd=HR&startDt=${ydStr2}&startHh=00&endDt=${ydStr2}&endHh=23&stnIds=${R.asos}`).then(r=>r.json()).catch(()=>null)
-      );
-    }
 
-    const [sunData, weeklyData, asosData] = await Promise.all(parallelFetches);
+    const [sunData, weeklyData, airRaw, asosData] = await Promise.all(parallelFetches);
 
     // 일출/일몰 파싱
     if (sunData) {
@@ -1789,9 +1774,15 @@ async function fetchWeather() {
     const srMin = sunriseH * 60 + sunriseM;
     const ssMin = sunsetH * 60 + sunsetM;
 
-    // 현재 시간 PTY/SKY (데이터 없으면 하루 대표값)
-    const curPty = ptys[curHour] ?? modePty;
-    const curSky = skys[curHour] ?? modeSky;
+    // 현재 시간 PTY/SKY (데이터 없으면 가장 가까운 시간 or 대표값)
+    let curPty = modePty, curSky = modeSky;
+    if (ptys[curHour] != null) { curPty = ptys[curHour]; curSky = skys[curHour]; }
+    else {
+      for (let offset = 1; offset <= 3; offset++) {
+        if (ptys[curHour+offset] != null) { curPty = ptys[curHour+offset]; curSky = skys[curHour+offset]; break; }
+        if (ptys[curHour-offset] != null) { curPty = ptys[curHour-offset]; curSky = skys[curHour-offset]; break; }
+      }
+    }
 
     function mkGrad(c1, c2, c3) {
       return `linear-gradient(135deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)`;
