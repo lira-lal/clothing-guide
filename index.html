@@ -1958,12 +1958,12 @@ async function fetchWeather() {
       const isNow = i === nowIdx;
       const hourLabel = isNow ? '지금' : `${realH}시`;
 
-      // 어제 비교 (오늘만)
+      // 어제 비교
       let cmpHtml = '';
-      if (i < 24 && yTemps[realH] !== undefined && yTemps[realH] !== null) {
-        const diff = t - Math.round(yTemps[realH]);
-        if (diff > 0) cmpHtml = `<span class="up">↑${diff}°</span>`;
-        else if (diff < 0) cmpHtml = `<span class="down">↓${Math.abs(diff)}°</span>`;
+      if (yesterdayTemps[realH] !== undefined && yesterdayTemps[realH] !== null) {
+        const diff = t - Math.round(yesterdayTemps[realH]);
+        if (diff > 0) cmpHtml = `<span class="up">+${diff}°</span>`;
+        else if (diff < 0) cmpHtml = `<span class="down">${diff}°</span>`;
         else cmpHtml = '같음';
       }
 
