@@ -1561,8 +1561,15 @@ async function fetchWeather() {
     const validSkys = skys.filter(s => s !== null);
     const modeSky = validSkys.length ? validSkys.sort((a,b) =>
       validSkys.filter(v=>v===a).length - validSkys.filter(v=>v===b).length).pop() : 1;
-    const hasRain = ptys.some(p => p === 1 || p === 2 || p === 4);
-    const hasSnow = ptys.some(p => p === 2 || p === 3);
+    // 오늘(0~23) / 내일(24~47) 비/눈 분리
+    const todayPtys = ptys.slice(0, 24);
+    const tmrwPtys = ptys.slice(24, 48);
+    const hasRainToday = todayPtys.some(p => p === 1 || p === 2 || p === 4);
+    const hasSnowToday = todayPtys.some(p => p === 2 || p === 3);
+    const hasRainTmrw = tmrwPtys.some(p => p === 1 || p === 2 || p === 4);
+    const hasSnowTmrw = tmrwPtys.some(p => p === 2 || p === 3);
+    const hasRain = hasRainToday || (curHour >= 21 && hasRainTmrw);
+    const hasSnow = hasSnowToday || (curHour >= 21 && hasSnowTmrw);
     const modePty = hasRain ? 1 : hasSnow ? 3 : 0;
     const [dayLabel, dayIcon] = kmaWeatherInfo(modeSky, modePty);
 
@@ -1616,14 +1623,17 @@ async function fetchWeather() {
 
     // 일출/일몰
     let sunriseH = 6, sunriseM = 0, sunsetH = 18, sunsetM = 30, uvMax = 0;
+    let yesterdayTemps = [];
     try {
-      const sunRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.6027&longitude=126.9291&daily=sunrise,sunset,uv_index_max&timezone=Asia/Seoul&forecast_days=1`);
+      const sunRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.6027&longitude=126.9291&daily=sunrise,sunset,uv_index_max&hourly=temperature_2m&timezone=Asia/Seoul&forecast_days=1&past_days=1`);
       const sunData = await sunRes.json();
       const sr = sunData.daily.sunrise[0];
       const ss = sunData.daily.sunset[0];
       sunriseH = parseInt(sr.slice(11,13)); sunriseM = parseInt(sr.slice(14,16));
       sunsetH = parseInt(ss.slice(11,13)); sunsetM = parseInt(ss.slice(14,16));
       uvMax = Math.round(sunData.daily.uv_index_max[0] || 0);
+      // 어제 시간별 기온 (0~23 = 어제, 24~47 = 오늘)
+      yesterdayTemps = sunData.hourly.temperature_2m.slice(0, 24);
     } catch(e) {}
 
     // 날짜/시간
@@ -1635,18 +1645,28 @@ async function fetchWeather() {
     // ── 알림 배너 ──
     let alerts = '';
 
-    if (hasRain) {
+    if (hasRainToday) {
       const hrs = precipHourStr(p => p===1||p===2||p===4);
       alerts += `<div class="alert-banner alert-rain">
         <span class="alert-icon">☂️</span>
         <span class="alert-text"><strong>우산 챙기세요!</strong> 비 소식 있음${hrs ? ' ('+hrs+')' : ''} · 강수확률 최대 ${maxPop}%</span>
       </div>`;
+    } else if (curHour >= 21 && hasRainTmrw) {
+      alerts += `<div class="alert-banner alert-rain">
+        <span class="alert-icon">☂️</span>
+        <span class="alert-text"><strong>내일 우산 챙기세요!</strong> 내일 비 소식 있음</span>
+      </div>`;
     }
-    if (hasSnow) {
+    if (hasSnowToday) {
       const hrs = precipHourStr(p => p===2||p===3);
       alerts += `<div class="alert-banner alert-snow">
         <span class="alert-icon">☂️</span>
         <span class="alert-text"><strong>우산 + 방수부츠!</strong> 눈 소식 있음${hrs ? ' ('+hrs+')' : ''} · 미끄럼 주의</span>
+      </div>`;
+    } else if (curHour >= 21 && hasSnowTmrw) {
+      alerts += `<div class="alert-banner alert-snow">
+        <span class="alert-icon">☂️</span>
+        <span class="alert-text"><strong>내일 우산 + 방수부츠!</strong> 내일 눈 소식 있음</span>
       </div>`;
     }
 
@@ -1657,6 +1677,18 @@ async function fetchWeather() {
     const nightParts = [nightClothes.outer, nightClothes.top, nightClothes.bottom].filter(Boolean);
     const dayStr = dayParts.join(' + ');
     const nightStr = nightParts.join(' + ');
+
+    // ── 내일 옷 추천 (21시~0시에만) ──
+    const tmrwTemps = temps.slice(24, 48).filter(t => t !== null);
+    let tmrwDayStr = '', tmrwNightStr = '';
+    if (tmrwTemps.length) {
+      const tmrwMax = Math.round(Math.max(...tmrwTemps));
+      const tmrwMin = Math.round(Math.min(...tmrwTemps));
+      const tmrwDay = clothesFor(tmrwMax);
+      const tmrwNight = clothesFor(tmrwMin);
+      tmrwDayStr = [tmrwDay.outer, tmrwDay.top, tmrwDay.bottom].filter(Boolean).join(' + ');
+      tmrwNightStr = [tmrwNight.outer, tmrwNight.top, tmrwNight.bottom].filter(Boolean).join(' + ');
+    }
 
     // 아이템 (우산, 마스크 등)
     const itemList = [];
@@ -1670,19 +1702,14 @@ async function fetchWeather() {
     const curHour = now.getHours();
     const curTemp = temps[curHour] !== null ? temps[curHour] : Math.round((tMax + tMin) / 2);
 
-    // 어제 같은 시간 비교 (hourly_history 활용)
+    // 어제 같은 시간 비교 (API)
     let compareStr = '';
-    try {
-      const hist = JSON.parse(localStorage.getItem('hourly_history') || '{}');
-      const yd = new Date(now); yd.setDate(yd.getDate() - 1);
-      const ydStr = yd.getFullYear() + String(yd.getMonth()+1).padStart(2,'0') + String(yd.getDate()).padStart(2,'0');
-      if (hist[ydStr] && hist[ydStr][curHour] !== null && hist[ydStr][curHour] !== undefined) {
-        const diff = Math.round(curTemp - hist[ydStr][curHour]);
-        if (diff > 0) compareStr = `어제보다 ${diff}도 높아요.`;
-        else if (diff < 0) compareStr = `어제보다 ${Math.abs(diff)}도 낮아요.`;
-        else compareStr = '어제와 비슷해요.';
-      }
-    } catch(e) {}
+    if (yesterdayTemps[curHour] !== undefined && yesterdayTemps[curHour] !== null) {
+      const diff = Math.round(curTemp - yesterdayTemps[curHour]);
+      if (diff > 0) compareStr = `어제보다 ${diff}도 높아요.`;
+      else if (diff < 0) compareStr = `어제보다 ${Math.abs(diff)}도 낮아요.`;
+      else compareStr = '어제와 비슷해요.';
+    }
 
     // 미세먼지 표시 텍스트
     const dustEmoji = dust.grade >= 2 ? '😷' : dust.grade >= 1 ? '😐' : '😊';
@@ -1942,6 +1969,14 @@ async function fetchWeather() {
           <div class="card-value">${itemStr}</div>
         </div>
       </div>
+      ${curHour >= 21 && tmrwDayStr ? `
+      <div class="hero-cards" style="margin-top:8px">
+        <div class="glass" style="grid-column:1/-1">
+          <div class="card-label">내일 옷 추천</div>
+          <div class="card-value" style="margin-bottom:6px">☀️ ${tmrwDayStr}</div>
+          <div class="card-value" style="opacity:0.85">🌙 ${tmrwNightStr}</div>
+        </div>
+      </div>` : ''}
 
       <div class="hero-stats">
         <div class="glass hero-stat">
